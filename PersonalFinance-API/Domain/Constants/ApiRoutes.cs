@@ -26,6 +26,7 @@
             public const string Base = $"{ApiRoutes.Base}/categories";
             public const string GetList = "get-list";
             public const string GetDetails = $"{{id}}";
+            public const string GetOptions = "get-options";
             public const string Create = "create";
             public const string Update = $"update/{{id}}";
             public const string Delete = $"delete/{{id}}";

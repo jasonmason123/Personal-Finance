@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using PersonalFinance.Application.Category.Commands;
 using PersonalFinance.Application.Category.Queries;
 using PersonalFinance.Domain.Constants;
+using PersonalFinance.Domain.DTOs;
 using PersonalFinance.Domain.DTOs.Category;
 using PersonalFinance.Domain.Enumerations;
 using System.Security.Claims;
@@ -66,6 +67,27 @@ namespace PersonalFinance.Presentation.Controllers
                     return NotFound();
                 }
 
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.Write(ex);
+                return StatusCode(500);
+            }
+        }
+
+        [HttpGet(ApiRoutes.Category.GetOptions)]
+        public async Task<IActionResult> GetOptions(
+            [FromQuery] string? search,
+            [FromQuery] TransactionType type
+        )
+        {
+            try
+            {
+                var query = queries
+                    .GetValueLabelListQuery(UserId, search ?? "", type);
+                // var result = await PaginationUtils.ToPagedListOffsetAsync(query, pageNumber, pageSize);
+                var result = await query.ToListAsync();
                 return Ok(result);
             }
             catch (Exception ex)
