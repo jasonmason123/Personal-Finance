@@ -11,14 +11,14 @@ using System.Text.Json;
 namespace PersonalFinance.Presentation.Controllers
 {
     [ApiController]
-    [Route(ApiRoutes.Authentication.Base)]
-    public class AuthenticationController : ControllerBase
+    [Route(ApiRoutes.Authentication.Web.Base)]
+    public class WebAuthenticationController : ControllerBase
     {
         private readonly IAuthenticationService authenticationService;
         private readonly IAuthTokenProvider authTokenProvider;
         private readonly IConfiguration configuration;
 
-        public AuthenticationController(IAuthenticationService authenticationService, IConfiguration configuration, IAuthTokenProvider authTokenProvider)
+        public WebAuthenticationController(IAuthenticationService authenticationService, IConfiguration configuration, IAuthTokenProvider authTokenProvider)
         {
             this.authenticationService = authenticationService;
             this.authTokenProvider = authTokenProvider;
