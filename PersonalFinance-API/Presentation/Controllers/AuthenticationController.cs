@@ -25,7 +25,7 @@ namespace PersonalFinance.Presentation.Controllers
             this.configuration = configuration;
         }
 
-        [HttpPost(ApiRoutes.Authentication.LoginWithUsername)]
+        [HttpPost(ApiRoutes.Authentication.Web.LoginWithUsername)]
         public async Task<IActionResult> LoginWithUsername([FromBody] LoginCredentials loginCredentials, bool? remember)
         {
             try
@@ -80,7 +80,7 @@ namespace PersonalFinance.Presentation.Controllers
             }
         }
 
-        [HttpPost(ApiRoutes.Authentication.LoginWithEmail)]
+        [HttpPost(ApiRoutes.Authentication.Web.LoginWithEmail)]
         public async Task<IActionResult> LoginWithEmail([FromBody] LoginCredentials loginCredentials, bool? remember)
         {
             try
@@ -134,7 +134,7 @@ namespace PersonalFinance.Presentation.Controllers
 
         // Only web app can sign out with this endpoint
         [Authorize(AuthenticationSchemes = AuthenticationConstants.WebAuthScheme)]
-        [HttpPost("logout")]
+        [HttpPost(ApiRoutes.Authentication.Web.Logout)]
         public IActionResult SignOutFromWeb()
         {
             try

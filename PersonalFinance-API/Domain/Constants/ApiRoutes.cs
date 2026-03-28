@@ -7,8 +7,13 @@
         public static class Authentication
         {
             public const string Base = $"{ApiRoutes.Base}/authentication";
-            public const string LoginWithUsername = "login-username";
-            public const string LoginWithEmail = "login-email";
+            public static class Web
+            {
+                public const string Base = $"{Authentication.Base}/web";
+                public const string LoginWithUsername = "login-username";
+                public const string LoginWithEmail = "login-email";
+                public const string Logout = "logout";
+            }
         }
 
         public static class Transaction
