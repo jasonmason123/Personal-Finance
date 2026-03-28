@@ -41,7 +41,10 @@ namespace PersonalFinance.Presentation.Controllers
                 }
 
                 if (authResult.Succeeded)
-                    return Ok(); // will return JWT token here later
+                    return Ok(new
+                    {
+                        Succeeded = authResult.Succeeded,
+                    });
 
                 if (authResult.IsLockedOut)
                 {
@@ -92,7 +95,10 @@ namespace PersonalFinance.Presentation.Controllers
                     Console.WriteLine($"Login success: {loginCredentials.Identifier}");
                     var jwtToken = authTokenProvider.GenerateToken(authResult.AppUser);
                     SetAuthCookies(authResult.AppUser, jwtToken, remember ?? false);
-                    return Ok();
+                    return Ok(new
+                    {
+                        Succeeded = authResult.Succeeded,
+                    });
                 }
 
                 if (authResult.IsLockedOut)

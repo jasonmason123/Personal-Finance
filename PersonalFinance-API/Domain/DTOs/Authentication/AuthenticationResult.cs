@@ -23,5 +23,9 @@ namespace PersonalFinance.Domain.DTOs.Authentication
         /// Indicates whether the <see cref="AuthenticationResult.AppUser"/> email is confirmed 
         /// </summary>
         public bool IsEmailConfirmed { get; set; }
+        /// <summary>
+        /// Token to confirm email
+        /// </summary>
+        public string? ConfirmationToken { get; set; }
     }
 }
