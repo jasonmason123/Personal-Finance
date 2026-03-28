@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PersonalFinance.Application.Transaction.Commands;
 using PersonalFinance.Application.Transaction.Queries;
@@ -9,6 +10,7 @@ using System.Security.Claims;
 
 namespace PersonalFinance.Presentation.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route(ApiRoutes.Transaction.Base)]
     public class TransactionController : ControllerBase

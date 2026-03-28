@@ -1,22 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PersonalFinance.Application.Category.Commands;
 using PersonalFinance.Application.Category.Queries;
 using PersonalFinance.Domain.Constants;
 using PersonalFinance.Domain.DTOs.Category;
 using PersonalFinance.Domain.Enumerations;
+using System.Security.Claims;
 
 namespace PersonalFinance.Presentation.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route(ApiRoutes.Category.Base)]
     public class CategoryController : ControllerBase
     {
-        //private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier)
-        //    ?? throw new UnauthorizedAccessException("User not authenticated");
-
-        private string UserId = Guid.NewGuid().ToString();
-
+        private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? throw new UnauthorizedAccessException("User not authenticated");
+        
         private readonly ICategoryQueries queries;
         private readonly ICategoryCommands commands;
 

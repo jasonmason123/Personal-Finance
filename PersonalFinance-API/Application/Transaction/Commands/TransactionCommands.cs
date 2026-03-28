@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PersonalFinance.Application.Transaction.Validations;
 using PersonalFinance.Domain.DTOs.Transaction;
 using PersonalFinance.Domain.Entities;
 using PersonalFinance.Infrastructure.DbContext;
@@ -8,10 +9,12 @@ namespace PersonalFinance.Application.Transaction.Commands
     public class TransactionCommands : ITransactionCommands
     {
         private readonly AppDbContext appDbContext;
+        private readonly TransactionValidations validations;
 
-        public TransactionCommands(AppDbContext appDbContext)
+        public TransactionCommands(AppDbContext appDbContext, TransactionValidations validations)
         {
             this.appDbContext = appDbContext;
+            this.validations = validations;
         }
 
         public async Task<T_Transaction> CreateByUserAsync(string userId, CreateUpdateTransactionInfo transactionInfo)
@@ -33,6 +36,11 @@ namespace PersonalFinance.Application.Transaction.Commands
                 CreatedAt = DateTime.UtcNow,
                 LastUpdatedAt = DateTime.UtcNow,
             };
+
+            if(! await validations.CheckCategoryTypeMatchTransactionType(newTransaction))
+            {
+                throw new InvalidOperationException("Category type does not match Transaction type");
+            }
 
             appDbContext.T_Transactions.Add(newTransaction);
             await appDbContext.SaveChangesAsync();
