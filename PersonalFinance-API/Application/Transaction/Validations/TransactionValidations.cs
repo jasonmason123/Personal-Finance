@@ -25,12 +25,8 @@ namespace PersonalFinance.Application.Transaction.Validations
                 throw new ArgumentException($"{nameof(transaction.CategoryId)} is not provided");
             }
 
-            var categoryType = await appDbContext.M_Categories
-                .Where(x => x.Id == transaction.CategoryId)
-                .Select(x => x.Type)
-                .FirstOrDefaultAsync();
-
-            return transaction.Type == categoryType;
+            return await appDbContext.M_Categories
+                    .Where(x => x.Id == transaction.CategoryId && x.Type == transaction.Type).AnyAsync();
         }
     }
 }
