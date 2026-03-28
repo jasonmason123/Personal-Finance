@@ -31,7 +31,7 @@ namespace PersonalFinance.Domain.DTOs.Transaction
         /// <summary>
         /// Transaction type
         /// </summary>
-        public TransactionType Type { get; set; }
+        public TransactionType? Type { get; set; }
         /// <summary>
         /// Created at
         /// </summary>
