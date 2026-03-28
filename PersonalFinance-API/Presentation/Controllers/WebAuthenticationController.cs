@@ -166,7 +166,7 @@ namespace PersonalFinance.Presentation.Controllers
             Response.Cookies.Append(AuthenticationConstants.JwtCookieKey, jwtToken, new CookieOptions
             {
                 Secure = true,
-                SameSite = SameSiteMode.Strict,
+                SameSite = SameSiteMode.None,
                 HttpOnly = true,
                 Expires = remember ? expirationDateUtc : null
             });
@@ -183,7 +183,7 @@ namespace PersonalFinance.Presentation.Controllers
             Response.Cookies.Append(AuthenticationConstants.UserInfoCookieKey, base64, new CookieOptions
             {
                 Secure = true,
-                SameSite = SameSiteMode.Strict,
+                SameSite = SameSiteMode.None,
                 Expires = remember ? expirationDateUtc : null
             });
 
@@ -191,7 +191,7 @@ namespace PersonalFinance.Presentation.Controllers
             Response.Cookies.Append(AuthenticationConstants.IsLoggedInCookieKey, "true", new CookieOptions
             {
                 Secure = true,
-                SameSite = SameSiteMode.Strict,
+                SameSite = SameSiteMode.None,
                 Expires = remember ? expirationDateUtc : null
             });
         }

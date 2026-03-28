@@ -154,7 +154,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(AuthenticationConstants.CommonCorsPolicy, policy =>
     {
         policy.WithOrigins(
-                "http://localhost:5173"
+                "https://localhost:5173"
               )
               .AllowAnyMethod()
               .AllowAnyHeader()
