@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PersonalFinance.Application.Authentication;
 using PersonalFinance.Domain.Constants;
+using PersonalFinance.Domain.DTOs.Authentication;
 using PersonalFinance.Domain.Entities;
 using PersonalFinance.Infrastructure.Tokens;
 using System.Text;
@@ -25,11 +26,19 @@ namespace PersonalFinance.Presentation.Controllers
         }
 
         [HttpPost(ApiRoutes.Authentication.LoginWithUsername)]
-        public async Task<IActionResult> LoginWithUsername(string username, string password)
+        public async Task<IActionResult> LoginWithUsername([FromBody] LoginCredentials loginCredentials, bool? remember)
         {
             try
             {
-                var authResult = await authenticationService.AuthenticateByUsernameAsync(username, password);
+                var authResult = await authenticationService.AuthenticateByUsernameAsync(loginCredentials.Identifier, loginCredentials.Password);
+
+                if (authResult.Succeeded && authResult.AppUser != null)
+                {
+                    Console.WriteLine($"Login success: {loginCredentials.Identifier}");
+                    var jwtToken = authTokenProvider.GenerateToken(authResult.AppUser);
+                    SetAuthCookies(authResult.AppUser, jwtToken, remember ?? false);
+                    return Ok();
+                }
 
                 if (authResult.Succeeded)
                     return Ok(); // will return JWT token here later
@@ -66,21 +75,21 @@ namespace PersonalFinance.Presentation.Controllers
             }
             catch (Exception ex)
             {
-                Console.Write($"Error during login for user {username}: {ex}");
+                Console.Write($"Error during login for user {loginCredentials.Identifier}: {ex}");
                 return StatusCode(500);
             }
         }
 
         [HttpPost(ApiRoutes.Authentication.LoginWithEmail)]
-        public async Task<IActionResult> LoginWithEmail(string email, string password, bool? remember)
+        public async Task<IActionResult> LoginWithEmail([FromBody] LoginCredentials loginCredentials, bool? remember)
         {
             try
             {
-                var authResult = await authenticationService.AuthenticateByEmailAsync(email, password);
+                var authResult = await authenticationService.AuthenticateByEmailAsync(loginCredentials.Identifier, loginCredentials.Password);
 
                 if (authResult.Succeeded && authResult.AppUser != null)
                 {
-                    Console.WriteLine($"Login success: {email}");
+                    Console.WriteLine($"Login success: {loginCredentials.Identifier}");
                     var jwtToken = authTokenProvider.GenerateToken(authResult.AppUser);
                     SetAuthCookies(authResult.AppUser, jwtToken, remember ?? false);
                     return Ok();
@@ -118,7 +127,7 @@ namespace PersonalFinance.Presentation.Controllers
             }
             catch (Exception ex)
             {
-                Console.Write($"Error during login for user email {email}: {ex}");
+                Console.Write($"Error during login for user email {loginCredentials.Identifier}: {ex}");
                 return StatusCode(500);
             }
         }
