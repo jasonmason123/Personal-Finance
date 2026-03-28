@@ -37,7 +37,7 @@ namespace PersonalFinance.Application.Transaction.Commands
                 LastUpdatedAt = DateTime.UtcNow,
             };
 
-            if(newTransaction.Type != null
+            if(transactionInfo.CategoryId != null
                 && !await validations.CheckCategoryTypeMatchTransactionType(newTransaction))
             {
                 throw new InvalidOperationException("Category type does not match Transaction type");
