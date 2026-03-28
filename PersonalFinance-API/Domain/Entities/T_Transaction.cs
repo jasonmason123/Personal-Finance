@@ -45,10 +45,10 @@ namespace PersonalFinance.Domain.Entities
         /// </summary>
         public DateTime LastUpdatedAt { get; set; }
         /// <summary>
-        /// Row version
+        /// Row version, maps to implicit column "xmin" on Postgresql
         /// </summary>
         [Timestamp]
-        public byte[] Version { get; set; }
+        public uint Version { get; }
         /// <summary>
         /// ID of the <see cref="M_AppUser"/> owning the Transaction
         /// </summary>
