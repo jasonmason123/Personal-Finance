@@ -173,6 +173,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCookiePolicy();
 app.UseCors(AuthenticationConstants.CommonCorsPolicy);
 
 app.UseAuthentication();
