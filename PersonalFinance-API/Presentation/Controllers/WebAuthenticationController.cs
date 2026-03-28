@@ -170,6 +170,7 @@ namespace PersonalFinance.Presentation.Controllers
                 HttpOnly = true,
                 Expires = remember ? expirationDateUtc : null
             });
+            Console.WriteLine($"Set {AuthenticationConstants.JwtCookieKey}, expires in {expirationInMinutes} minutes, expires on {expirationDateUtc}");
 
             // Add base64 userInfo cookie
             var userObj = new
@@ -186,6 +187,7 @@ namespace PersonalFinance.Presentation.Controllers
                 SameSite = SameSiteMode.None,
                 Expires = remember ? expirationDateUtc : null
             });
+            Console.WriteLine($"Set {AuthenticationConstants.UserInfoCookieKey}, expires in {expirationInMinutes} minutes, expires on {expirationDateUtc}");
 
             // Add IsLoggedIn cookie
             Response.Cookies.Append(AuthenticationConstants.IsLoggedInCookieKey, "true", new CookieOptions
@@ -194,6 +196,7 @@ namespace PersonalFinance.Presentation.Controllers
                 SameSite = SameSiteMode.None,
                 Expires = remember ? expirationDateUtc : null
             });
+            Console.WriteLine($"Set {AuthenticationConstants.IsLoggedInCookieKey}, expires in {expirationInMinutes} minutes, expires on {expirationDateUtc}");
         }
 
         private void RemoveAuthCookies()
@@ -201,6 +204,7 @@ namespace PersonalFinance.Presentation.Controllers
             Response.Cookies.Delete(AuthenticationConstants.JwtCookieKey);
             Response.Cookies.Delete(AuthenticationConstants.IsLoggedInCookieKey);
             Response.Cookies.Delete(AuthenticationConstants.UserInfoCookieKey);
+            Console.WriteLine("Auth cookies deleted");
         }
     }
 }
