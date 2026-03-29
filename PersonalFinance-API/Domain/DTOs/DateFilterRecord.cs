@@ -6,7 +6,7 @@
         public DateTime? DateFrom { get; init; }
         public DateTime? DateTo { get; init; }
 
-        private DateFilterRecord() { }
+        public DateFilterRecord() { }
 
         public static DateFilterRecord Exact(DateTime date) =>
             new() { ExactDate = date };
