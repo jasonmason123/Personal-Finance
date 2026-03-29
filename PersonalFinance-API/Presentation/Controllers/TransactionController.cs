@@ -42,6 +42,7 @@ namespace PersonalFinance.Presentation.Controllers
                     {
                         Id = x.Id,
                         Title = x.Title,
+                        Date = x.Date,
                         Amount = x.Amount,
                         Type = x.Type,
                         CategoryId = x.CategoryId,
