@@ -16,6 +16,14 @@
             }
         }
 
+        public static class Analytics
+        {
+            public const string Base = $"{ApiRoutes.Base}/analytics";
+            public const string GetSummary = "summary";
+            public const string GetBreakdown = "breakdown";
+            public const string GetTrend = $"trend/{{year}}";
+        }
+
         public static class Transaction
         {
             public const string Base = $"{ApiRoutes.Base}/transactions";

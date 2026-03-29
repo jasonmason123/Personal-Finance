@@ -1,17 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PersonalFinance.Domain.Entities;
 using PersonalFinance.Infrastructure.DbContext;
 
 namespace PersonalFinance.Application.Category.Validations
 {
     public class CategoryValidations
     {
-        private readonly IConfiguration configuration;
         private readonly AppDbContext appDbContext;
+
+        public int MaxCategoriesAllowed { get; }
 
         public CategoryValidations(AppDbContext appDbContext, IConfiguration configuration)
         {
             this.appDbContext = appDbContext;
-            this.configuration = configuration;
+            this.MaxCategoriesAllowed = configuration.GetValue<int>("BusinessRules:MaxCategoriesPerUser");
         }
 
         /// <summary>
@@ -21,8 +23,18 @@ namespace PersonalFinance.Application.Category.Validations
         /// <returns></returns>
         public async Task<bool> CheckMaximumCategoriesOwnedByUserAsync(string userId)
         {
-            var max = configuration.GetValue<int>("BusinessRules:MaxCategoriesPerUser");
-            return await appDbContext.M_Categories.Where(x => x.UserId == userId).Select(x => x.Id).CountAsync() <= max;
+            return await appDbContext.M_Categories.Where(x => x.UserId == userId).Select(x => x.Id).CountAsync() <= MaxCategoriesAllowed;
+        }
+
+        /// <summary>
+        /// Ensure that for each <paramref name="userId"/>, no <see cref="M_Category.Name"/> is duplicated
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public async Task<bool> CheckNameExisted(string userId, string name)
+        {
+            return await appDbContext.M_Categories.Where(x => x.Name == name && x.UserId == userId).AnyAsync();
         }
     }
 }

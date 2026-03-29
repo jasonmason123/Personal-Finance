@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using PersonalFinance.Application.Analytics.Queries;
+using PersonalFinance.Application.Analytics.Validations;
 using PersonalFinance.Application.Authentication;
 using PersonalFinance.Application.Category.Commands;
 using PersonalFinance.Application.Category.Queries;
@@ -35,6 +37,7 @@ var connectionString = Env.GetString("DB_CONNECTION_STRING")
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
 // Register DI services
+builder.Services.AddScoped<IAnalyticsQueries, AnalyticsQueries>();
 builder.Services.AddScoped<ICategoryQueries, CategoryQueries>();
 builder.Services.AddScoped<ICategoryCommands, CategoryCommands>();
 builder.Services.AddScoped<ITransactionQueries, TransactionQueries>();
@@ -42,6 +45,7 @@ builder.Services.AddScoped<ITransactionCommands, TransactionCommands>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 // Validations
 builder.Services.AddScoped<CategoryValidations>();
+builder.Services.AddScoped<AnalyticsValidations>();
 builder.Services.AddScoped<TransactionValidations>();
 // Identity
 builder.Services.AddScoped<IAuthTokenProvider, JwtProvider>();

@@ -19,19 +19,5 @@ namespace PersonalFinance.Application.Transaction.Queries
         /// <param name="userId"></param>
         /// <returns></returns>
         public IQueryable<TransactionResult> GetDetailsQueryByUser(Guid id, string userId);
-        /// <summary>
-        /// Calculate the total amount of all <see cref="T_Transaction"/> within the search range
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="queryParams"></param>
-        /// <returns></returns>
-        public Task<double> CalculateTotalAmountByUserAsync(string userId, TransactionQueryParams queryParams);
-        /// <summary>
-        /// Count the number of <see cref="T_Transaction"/> items within the query range
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="queryParams"></param>
-        /// <returns></returns>
-        public Task<int> CountItemsByUser(string userId, TransactionQueryParams queryParams);
     }
 }

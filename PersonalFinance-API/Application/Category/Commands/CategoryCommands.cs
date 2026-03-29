@@ -8,23 +8,25 @@ namespace PersonalFinance.Application.Category.Commands
 {
     public class CategoryCommands : ICategoryCommands
     {
-        private readonly IConfiguration configuration;
         private readonly AppDbContext appDbContext;
         private readonly CategoryValidations validations;
 
-        public CategoryCommands(AppDbContext appDbContext, CategoryValidations validations, IConfiguration configuration)
+        public CategoryCommands(AppDbContext appDbContext, CategoryValidations validations)
         {
             this.appDbContext = appDbContext;
             this.validations = validations;
-            this.configuration = configuration;
         }
 
         public async Task<M_Category> CreateByUserAsync(string userId, string categoryName, TransactionType type)
         {
             if (!await validations.CheckMaximumCategoriesOwnedByUserAsync(userId))
             {
-                var max = configuration.GetValue<int>("BusinessRules:MaxCategoriesPerUser");
-                throw new InvalidOperationException($"User cannot create any more Categories, max: {max}");
+                throw new InvalidOperationException($"User cannot create any more Categories, max: {validations.MaxCategoriesAllowed}");
+            }
+
+            if (!await validations.CheckNameExisted(userId, categoryName))
+            {
+                throw new ArgumentException($"Category name {categoryName} already existed");
             }
 
             var newCategory = new M_Category
@@ -44,6 +46,11 @@ namespace PersonalFinance.Application.Category.Commands
 
         public async Task<M_Category> UpdateByUserAsync(Guid categoryId, string userId, string newName)
         {
+            if (!await validations.CheckNameExisted(userId, newName))
+            {
+                throw new ArgumentException($"Category name {newName} already existed");
+            }
+
             var category = await appDbContext.M_Categories.Where(x => x.Id == categoryId && x.UserId == userId).FirstOrDefaultAsync();
 
             if(category == null)

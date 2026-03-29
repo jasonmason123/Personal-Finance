@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using PersonalFinance.Application.Category.Commands;
 using PersonalFinance.Application.Category.Queries;
 using PersonalFinance.Domain.Constants;
-using PersonalFinance.Domain.DTOs;
 using PersonalFinance.Domain.DTOs.Category;
 using PersonalFinance.Domain.Enumerations;
 using System.Security.Claims;

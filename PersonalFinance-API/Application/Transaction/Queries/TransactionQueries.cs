@@ -57,29 +57,6 @@ namespace PersonalFinance.Application.Transaction.Queries
                 });
         }
 
-        public async Task<double> CalculateTotalAmountByUserAsync(string userId, TransactionQueryParams queryParams)
-        {
-            var query = appDbContext.T_Transactions.Where(x => x.UserId == userId);
-
-            if (queryParams.DateFilter == null)
-            {
-                throw new ArgumentException("Must specify date range");
-            }
-
-            query = BuildConditionsFromQueryParams(query, queryParams);
-
-            return await query.SumAsync(x => x.Amount);
-        }
-
-        public async Task<int> CountItemsByUser(string userId, TransactionQueryParams queryParams)
-        {
-            var query = appDbContext.T_Transactions.Where(x => x.UserId == userId);
-
-            query = BuildConditionsFromQueryParams(query, queryParams);
-
-            return await query.Select(x => x.Id).CountAsync();
-        }
-
         private IQueryable<T_Transaction> BuildConditionsFromQueryParams(IQueryable<T_Transaction> query, TransactionQueryParams queryParams)
         {
             if (!string.IsNullOrEmpty(queryParams.Search))

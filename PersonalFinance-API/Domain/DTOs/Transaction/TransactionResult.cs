@@ -23,7 +23,7 @@ namespace PersonalFinance.Domain.DTOs.Transaction
         /// <summary>
         /// Transaction amount
         /// </summary>
-        public double Amount { get; set; } = 0;
+        public decimal Amount { get; set; } = 0;
         /// <summary>
         /// Date and time the Transaction occurred
         /// </summary>
