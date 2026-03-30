@@ -1,8 +1,8 @@
 import StatisticsChart from "../../components/dashboard/StatisticsChart";
-import RecentTransactions from "../../components/dashboard/RecentTransactions";
 import PageMeta from "../../components/common/PageMeta";
 import MonthlyOverall from "../../components/dashboard/MonthlyOverall";
-import ExpenseByCategoryChart from "../../components/dashboard/ExpenseByCategoryChart";
+import ExpenseBreakdownChart from "../../components/dashboard/ExpenseBreakdownChart";
+import IncomeBreakdownChart from "../../components/dashboard/IncomeBreakdownChart";
 
 export default function Home() {
   return (
@@ -18,11 +18,11 @@ export default function Home() {
         </div>
 
         <div className="col-span-12 md:col-span-6">
-          <ExpenseByCategoryChart />
+          <ExpenseBreakdownChart />
         </div>
 
         <div className="col-span-12 md:col-span-6">
-          <RecentTransactions />
+          <IncomeBreakdownChart />
         </div>
 
         <div className="col-span-12">

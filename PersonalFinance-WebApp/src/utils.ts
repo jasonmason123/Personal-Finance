@@ -1,11 +1,4 @@
-import { PeriodUnit, UserInfo } from "./types"
-
-export const periodUnitOptions = [
-  { value: PeriodUnit.DAY as any as string, label: "Ngày" },
-  { value: PeriodUnit.WEEK as any as string, label: "Tuần" },
-  { value: PeriodUnit.MONTH as any as string, label: "Tháng" },
-  { value: PeriodUnit.YEAR as any as string, label: "Năm" },
-]
+import { UserInfo } from "./types"
 
 export function getCookie(name: string): string | null {
   const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
@@ -36,22 +29,41 @@ export function buildQueryString(params: Record<string, any>): string {
     pageSize: 10,
   };
 
-  Object.entries(params).forEach(([key, value]) => {
-    if (
-      value !== null &&
-      value !== undefined &&
-      value !== '' &&
-      !(Array.isArray(value) && value.length === 0)
-    ) {
-      if (DEFAULTS[key] !== undefined && DEFAULTS[key] === value) {
-        return; // skip default value
-      }
+  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-      if (Array.isArray(value)) {
-        value.forEach(v => query.append(key, String(v)));
-      } else {
-        query.append(key, String(value));
-      }
+  Object.entries(params).forEach(([key, value]) => {
+    // 1. Standard Guard Clauses
+    if (
+      value === null ||
+      value === undefined ||
+      value === '' ||
+      (Array.isArray(value) && value.length === 0)
+    ) {
+      return;
+    }
+
+    // 2. Skip Defaults
+    if (DEFAULTS[key] !== undefined && DEFAULTS[key] === value) {
+      return;
+    }
+
+    // 3. Handle DateFilterIso (Nested Object)
+    // Since properties are already ISO strings, we just map them to Dot Notation
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      Object.entries(value).forEach(([subKey, subValue]) => {
+        if (subValue) {
+          const compositeKey = `${capitalize(key)}.${capitalize(subKey)}`;
+          query.append(compositeKey, String(subValue));
+        }
+      });
+      return;
+    }
+
+    // 4. Handle Arrays & Primitives
+    if (Array.isArray(value)) {
+      value.forEach(v => query.append(capitalize(key), String(v)));
+    } else {
+      query.append(capitalize(key), String(value));
     }
   });
 
@@ -59,7 +71,7 @@ export function buildQueryString(params: Record<string, any>): string {
 }
 
 export function getUserInfo(): UserInfo | null {
-  const userInfoBase64 = getCookie("userInfo");
+  const userInfoBase64 = getCookie("user_info");
   if (!userInfoBase64) return null;
 
   try {

@@ -77,13 +77,13 @@ export default function TransactionAddEdit() {
       setNewTransaction(transactionFromState);
     } else if(!transactionFromState && id) {
       setLoading(true);
-      fetchTransaction(parseInt(id))
+      fetchTransaction(id as UUID)
         .then((transaction) => {
           setNewTransaction({
             ...transaction,
             date: transaction.date && new Date(transaction.date),
             createdAt: transaction.createdAt && new Date(transaction.createdAt),
-            updatedAt: transaction.updatedAt && new Date(transaction.updatedAt),
+            lastUpdatedAt: transaction.lastUpdatedAt && new Date(transaction.lastUpdatedAt),
           });
         })
         .catch((error) => {
@@ -96,34 +96,37 @@ export default function TransactionAddEdit() {
   }, []);
   
   useEffect(() => {
-    fetchCategoryOptions()
+    if (newTransaction != undefined &&
+      newTransaction?.type != undefined) {
+
+      fetchCategoryOptions({ type: newTransaction.type })
       .then((options) => {
         setCategoryOptions(options);
+        setLoadingOptions(false);
       })
       .catch((error) => {
         handleError("Error fetching category options:", error);
       })
-      .finally(() => {
-        setLoadingOptions(false);
-      });
-  }, []);
+    }
+    
+  }, [newTransaction?.type]);
     
   return (
     <>
       <PageMeta
-        title={id ? "Cập nhật giao dịch" : "Tạo giao dịch mới"}
-        description={id ? "Cập nhật giao dịch" : "Tạo giao dịch mới"}
+        title={id ? "Cập nhật giao dịch" : "Thêm giao dịch mới"}
+        description={id ? "Cập nhật giao dịch" : "Thêm giao dịch mới"}
       />
       <PageBreadcrumb
         pageTitles={[
           { title: "Giao dịch", path: "/transactions" },
-          { title: id ? "Cập nhật giao dịch" : "Tạo giao dịch mới",
+          { title: id ? "Cập nhật giao dịch" : "Thêm giao dịch mới",
             path: id ? `/transactions/${id}/edit` : "/transactions/create" },
         ]}
       />
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
         <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
-          {id ? "Cập nhật giao dịch" : "Tạo giao dịch mới"}
+          {id ? "Cập nhật giao dịch" : "Thêm giao dịch mới"}
         </h3>
         <form
           className="space-y-6"
@@ -159,13 +162,12 @@ export default function TransactionAddEdit() {
 
                   <div>
                     <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      Bên giao dịch<span className="text-red-500">*</span>
+                      Bên giao dịch
                     </p>
                     <div className="text-sm font-medium text-gray-800 dark:text-white/90">
                       <Input
                         disabled={loading}
                         placeholder="Bên giao dịch"
-                        required
                         value={newTransaction?.merchant || ""}
                         onChange={(e) =>
                           setNewTransaction((prev) => ({
@@ -213,11 +215,11 @@ export default function TransactionAddEdit() {
                         disabled={loading}
                         placeholder="Chọn loại giao dịch"
                         options={transactionTypes}
-                        defaultValue={transactionFromState?.transactionType?.toString()}
+                        defaultValue={transactionFromState?.type?.toString()}
                         onChange={(selectedOption) => {
                           setNewTransaction((prev) => ({
                             ...prev,
-                            transactionType:
+                            type:
                               selectedOption as unknown as TransactionType,
                           }));
                         }}
@@ -228,7 +230,7 @@ export default function TransactionAddEdit() {
                   <div>
                     <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
                       {newTransaction &&
-                      newTransaction.transactionType == TransactionType.INCOME
+                      newTransaction.type == TransactionType.INCOME
                         ? "Khoản nhận về (VNĐ)"
                         : "Khoản đã chi (VNĐ)"}
                       <span className="text-red-500">*</span>
@@ -255,7 +257,7 @@ export default function TransactionAddEdit() {
 
                   <div>
                     <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      Phân loại giao dịch<span className="text-red-500">*</span>
+                      Phân loại giao dịch
                     </p>
                     <div className="text-sm font-medium text-gray-800 dark:text-white/90">
                       <ModalSelect

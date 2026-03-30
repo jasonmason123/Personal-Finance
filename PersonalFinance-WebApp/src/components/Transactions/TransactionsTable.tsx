@@ -6,15 +6,30 @@ TableFooter,
 TableRow,
 } from "../ui/table";
   
-import {  DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE, Transaction, TransactionFilterParams, TransactionType } from "../../types";
-import { useEffect, useState } from "react";
+import {  DateFilterIso, DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE, Transaction, TransactionFilterParams, TransactionType } from "../../types";
+import { useEffect, useMemo, useState } from "react";
 import React from "react";
 import { useNavigate } from "react-router";
 import Pagination from "../tables/Pagination";
 import DatePicker from "../form/date-picker"; // Add this import if not present
 import flatpickr from "flatpickr"; // Add this import if not present
-// import { fetchTransactionPagedList } from "../../api_caller/TransactionApiCaller";
+import { fetchTransactionPagedList } from "../../api_caller/TransactionApiCaller";
 import { UUID } from "crypto";
+
+/** Stable local calendar day (YYYY-MM-DD) for grouping — avoids toLocaleDateString quirks and invalid Date collapsing. */
+function getLocalDateKey(d: Date): string | null {
+  if (Number.isNaN(d.getTime())) return null;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function parseLocalDateKeyForDisplay(key: string): string {
+  const [y, m, day] = key.split("-").map(Number);
+  const d = new Date(y, m - 1, day);
+  return d.toLocaleDateString("vi-VN");
+}
 
 interface TransactionTableProps {
   isSearchAndFilterIncluded?: boolean;
@@ -44,72 +59,40 @@ export default function TransactionsTable({
   const [dateRange, setDateRange] = useState<[Date | undefined, Date | undefined]>([undefined, undefined]);
   const datePickerRef = React.useRef<flatpickr.Instance | null>(null);
 
-  const groupedTransactions = transactions?.reduce((acc, transaction) => {
-    const dateKey = transaction.date &&
-        new Date(transaction.date).toLocaleDateString('vi-VN');
-    if (!dateKey) return acc;
-    if (!acc[dateKey]) acc[dateKey] = [];
-    acc[dateKey].push(transaction);
-    return acc;
-  }, {} as Record<string, Transaction[]>);
-
   useEffect(() => {
     if(fetchTransactions) {
-      // setLoading(true);
-      // fetchTransactionPagedList(filterParam)
-      //   .then((data) => {
-      //     setTransactions(data.items ?? []);
-      //     setItemCount(data.itemCount);
-      //     setPageCount(data.pageCount);
-      //   })
-      //   .catch((error) => {
-      //     console.error("Error fetching transactions:", error);
-      //   })
-      //   .finally(() => {
-      //     setLoading(false);
-      //   });
-      const transactions: Transaction[] = [
-        {
-          id: "550e8400-e29b-41d4-a716-446655440000",
-          title: "MORNING COFFEE",
-          amount: 5.50,
-          date: new Date("2024-03-01"),
-          transactionType: TransactionType.EXPENSE,
-          createdAt: new Date("2024-03-01"),
-          updatedAt: new Date("2024-03-01"),
-          categoryId: "550e8400-e29b-41d4-a716-446655440001",
-          categoryName: "FOOD & DRINKS"
-        },
-        {
-          id: "550e8400-e29b-41d4-a716-446655440002",
-          title: "SALARY",
-          amount: 3000.00,
-          date: new Date("2024-03-10"),
-          transactionType: TransactionType.INCOME,
-          createdAt: new Date("2024-03-10"),
-          updatedAt: new Date("2024-03-10"),
-          categoryId: "550e8400-e29b-41d4-a716-446655440003",
-          categoryName: "INCOME"
-        },
-        {
-          id: "550e8400-e29b-41d4-a716-446655440004",
-          title: "NETFLIX SUBSCRIPTION",
-          amount: 15.99,
-          date: new Date("2024-03-10"),
-          transactionType: TransactionType.EXPENSE,
-          createdAt: new Date("2024-03-10"),
-          updatedAt: new Date("2024-03-10"),
-          categoryId: "550e8400-e29b-41d4-a716-446655440005",
-          categoryName: "ENTERTAINMENT"
-        }
-      ];
-
-      setTransactions(transactions);
-      setItemCount(transactions.length);
-      setPageCount(1);
-      setLoading(false);
+      setLoading(true);
+      fetchTransactionPagedList(filterParam)
+        .then((data) => {
+          setTransactions(data.items ?? []);
+          setItemCount(data.itemCount);
+          setPageCount(data.pageCount);
+        })
+        .catch((error) => {
+          console.error("Error fetching transactions:", error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     }
   }, [filterParam]);
+
+  const groupedTransactions = useMemo(() => {
+    const groups: Record<string, Transaction[]> = {};
+    for (const transaction of transactions ?? []) {
+      if (transaction.date == null) continue;
+      const d =
+        transaction.date instanceof Date
+          ? transaction.date
+          : new Date(transaction.date);
+      const dateKey = getLocalDateKey(d);
+      if (!dateKey) continue;
+      if (!groups[dateKey]) groups[dateKey] = [];
+      groups[dateKey].push(transaction);
+    }
+
+    return groups;
+  }, [transactions]);
 
   // Set transactions to default transactions on reloads
   useEffect(() => {
@@ -124,7 +107,7 @@ export default function TransactionsTable({
     setFilterParam({
       pageNumber: DEFAULT_PAGE_NUMBER,
       pageSize: DEFAULT_PAGE_SIZE,
-      search: searchStr,
+      search:   searchStr.toUpperCase().trim(),
     });
   }
 
@@ -161,16 +144,14 @@ export default function TransactionsTable({
       setDateRange([selectedDates[0], selectedDates[1]]);
       setFilterParam({
         ...filterParam,
-        dateFrom: selectedDates[0].toISOString(),
-        dateTo: selectedDates[1].toISOString(),
+        dateFilter: DateFilterIso.between(selectedDates[0], selectedDates[1]),
         pageNumber: DEFAULT_PAGE_NUMBER,
       });
     } else {
       setDateRange([undefined, undefined]);
       setFilterParam({
         ...filterParam,
-        dateFrom: undefined,
-        dateTo: undefined,
+        dateFilter: undefined,
         pageNumber: DEFAULT_PAGE_NUMBER,
       });
     }
@@ -182,8 +163,7 @@ export default function TransactionsTable({
     setDateRange([undefined, undefined]);
     setFilterParam({
       ...filterParam,
-      dateFrom: undefined,
-      dateTo: undefined,
+      dateFilter: undefined,
       pageNumber: DEFAULT_PAGE_NUMBER,
     });
   };
@@ -272,30 +252,18 @@ export default function TransactionsTable({
                   </TableCell>
                 </TableRow>
               ) : (
-                Object.entries(groupedTransactions).map(([date, group]) => {
-                  const dayTotal = group.reduce((sum, t) => {
-                    const amount = t.amount ?? 0;
-                    return t.transactionType === TransactionType.EXPENSE ? sum - amount : sum + amount;
-                  }, 0);
+                Object.entries(groupedTransactions)
+                  .sort((a, b) => b[0].localeCompare(a[0]))
+                  .map(([dateKey, group]) => {
                   return (
-                    <React.Fragment key={date}>
+                    <React.Fragment key={dateKey}>
                       <TableRow>
                         <TableCell
                           colSpan={2}
                           className="bg-gray-100 dark:bg-gray-900 text-xs font-semibold text-gray-600 dark:text-gray-300 py-2 px-5"
                         >
                           <div className="flex justify-between items-center w-full">
-                            <span>{date}</span>
-                            <span className={dayTotal >= 0 ?
-                              "text-green-500" :
-                              "text-gray-600 dark:text-gray-300"}
-                            >
-                              {dayTotal >= 0 && '+'}
-                              {dayTotal.toLocaleString("vi-VN", {
-                                style: "currency",
-                                currency: "VND"
-                              })}
-                            </span>
+                            <span>{parseLocalDateKeyForDisplay(dateKey)}</span>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -315,12 +283,12 @@ export default function TransactionsTable({
                                 <div className="flex items-center gap-2">
                                   <div
                                     className={`w-8 h-8 flex items-center justify-center rounded-full border
-                                      ${transaction.transactionType === TransactionType.INCOME ? "border-green-500"
-                                      : transaction.transactionType === TransactionType.EXPENSE ? "border-red-500" : ""}`}
+                                      ${transaction.type === TransactionType.INCOME ? "border-green-500"
+                                      : transaction.type === TransactionType.EXPENSE ? "border-red-500" : ""}`}
                                   >
-                                    {transaction.transactionType === TransactionType.INCOME ? (
+                                    {transaction.type === TransactionType.INCOME ? (
                                       <i className="fa-solid fa-circle-dollar-to-slot text-green-500"></i>
-                                    ) : transaction.transactionType === TransactionType.EXPENSE ? (
+                                    ) : transaction.type === TransactionType.EXPENSE ? (
                                       <i className="fa-solid fa-wallet text-red-500"></i>
                                     ) : null}
                                   </div>
@@ -336,12 +304,12 @@ export default function TransactionsTable({
                                 </div>
                                 <div>
                                   <span className={`text-sm font-bold ${
-                                    transaction.transactionType === TransactionType.EXPENSE ?
+                                    transaction.type === TransactionType.EXPENSE ?
                                       "text-red-500" :
                                       "text-green-500"}`}
                                   >
                                     {transaction.amount !== undefined &&
-                                      transaction.transactionType === TransactionType.INCOME ? '+' : '-'}
+                                      transaction.type === TransactionType.INCOME ? '+' : '-'}
                                     {transaction?.amount?.toLocaleString("vi-VN", {
                                       style: "currency",
                                       currency: "VND",
@@ -367,7 +335,7 @@ export default function TransactionsTable({
                 <div className="w-full flex justify-between items-center flex-col sm:flex-row px-4 py-3 gap-2">
                   {isLineCountDisplayed && transactions && (
                     <div>
-                      <span className="text-sm text-gray-400">Số dòng đếm được: </span>
+                      <span className="text-sm text-gray-400">Số dòng: </span>
                       <span className="text-sm dark:text-white">
                         {itemCount}
                       </span>

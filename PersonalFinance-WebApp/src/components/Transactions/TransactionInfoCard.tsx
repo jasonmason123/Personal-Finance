@@ -17,18 +17,18 @@ export default function TransactionInfoCard({ transaction }: TransactionInfoCard
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                {transaction.transactionType === TransactionType.INCOME
+                {transaction.type === TransactionType.INCOME
                     && (transaction.amount && transaction.amount > 0) ? "Khoản nhận về" : "Khoản đã chi"}
               </p>
               <p className="text-sm font-bold text-gray-800 dark:text-white/90 text-bold">
-                {transaction.transactionType == TransactionType.INCOME ? (
+                {transaction.type == TransactionType.INCOME ? (
                   <span className="text-green-500">
                     +{transaction.amount && transaction.amount.toLocaleString("vi-VN", {
                       style: "currency",
                       currency: "VND"
                     })}
                   </span>
-                ) : transaction.transactionType == TransactionType.EXPENSE ? (
+                ) : transaction.type == TransactionType.EXPENSE ? (
                   <span className="text-red-500">
                     -{transaction.amount && transaction.amount.toLocaleString("vi-VN", {
                       style: "currency",
@@ -54,13 +54,13 @@ export default function TransactionInfoCard({ transaction }: TransactionInfoCard
                 <Badge
                   size="sm"
                   className={
-                    transaction.transactionType === TransactionType.INCOME ? "border-green-500"
-                    : transaction.transactionType === TransactionType.EXPENSE ? "border-red-500"
+                    transaction.type === TransactionType.INCOME ? "border-green-500"
+                    : transaction.type === TransactionType.EXPENSE ? "border-red-500"
                     : ""
                   }
                 >
-                  {transaction.transactionType === TransactionType.INCOME ? "Thu nhập" :
-                   transaction.transactionType === TransactionType.EXPENSE ? "Chi tiêu" : null
+                  {transaction.type === TransactionType.INCOME ? "Thu nhập" :
+                   transaction.type === TransactionType.EXPENSE ? "Chi tiêu" : null
                   }
                 </Badge>
               </p>

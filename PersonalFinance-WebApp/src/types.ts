@@ -3,7 +3,6 @@ import { UUID } from "crypto";
 //Constants
 export const DEFAULT_PAGE_SIZE = 10;
 export const DEFAULT_PAGE_NUMBER = 1;
-export const APP_BASE_URL = "/app";
 
 //Utils
 export interface PageTitle {
@@ -23,13 +22,6 @@ export enum TransactionType {
     EXPENSE = "Expense",
 }
 
-export enum PeriodUnit {
-    DAY = "DAY",
-    WEEK = "WEEK",
-    MONTH = "MONTH",
-    YEAR = "YEAR"
-}
-
 export enum FlagBoolean {
     TRUE = "TRUE",
     FALSE = "FALSE"
@@ -42,9 +34,9 @@ export interface Transaction {
   merchant?: string;
   amount?: number;
   date?: Date;
-  transactionType?: TransactionType;
+  type?: TransactionType;
   createdAt?: Date;
-  updatedAt?: Date;
+  lastUpdatedAt?: Date;
   categoryId?: UUID; // Added to link to category
   categoryName?: string;
 }
@@ -55,7 +47,57 @@ export interface Category {
   type?: TransactionType;
   createdAt?: Date;
   lastUpdatedAt?: Date;
-  flagDel?: FlagBoolean;
+}
+
+/** Date filter parameters */
+export class DateFilterIso {
+  /** Filter for a specific single day */
+  public exactDate?: string;
+  /** Filter starting from a specific date (inclusive) */
+  public dateFrom?: string;
+  /** Filter up to a specific date (inclusive) */
+  public dateTo?: string;
+
+  // Private constructor prevents "new DateFilter()" 
+  // and forces use of the static factory methods below.
+  private constructor() {}
+
+  /**
+   * Filter for a specific single day.
+   */
+  public static exact(date: Date): DateFilterIso {
+    const filter = new DateFilterIso();
+    filter.exactDate = date.toISOString();
+    return filter;
+  }
+
+  /**
+   * Filter starting from a specific date (inclusive).
+   */
+  public static from(dateFrom: Date): DateFilterIso {
+    const filter = new DateFilterIso();
+    filter.dateFrom = dateFrom.toISOString();
+    return filter;
+  }
+
+  /**
+   * Filter up to a specific date (inclusive).
+   */
+  public static to(dateTo: Date): DateFilterIso {
+    const filter = new DateFilterIso();
+    filter.dateTo = dateTo.toISOString();
+    return filter;
+  }
+
+  /**
+   * Filter between two specific dates (range).
+   */
+  public static between(from: Date, to: Date): DateFilterIso {
+    const filter = new DateFilterIso();
+    filter.dateFrom = from.toISOString();
+    filter.dateTo = to.toISOString();
+    return filter;
+  }
 }
 
 //Filter params
@@ -67,9 +109,9 @@ export interface BaseFilterParams {
 
 // Use ISO8601 format for date strings
 export interface TransactionFilterParams extends BaseFilterParams {
-  dateFrom?: string;
-  dateTo?: string;
   transactionType?: TransactionType;
+  categoryId?: UUID;
+  dateFilter?: DateFilterIso;
 }
 
 //DTO
@@ -90,22 +132,14 @@ export interface AuthenticationResult {
 }
 
 export interface IncomeExpenseResult {
-  from: string;
-  to: string;
   income: number;
   expense: number;
 }
 
-export interface IncomeExpenseSummaryResult extends IncomeExpenseResult {
-  incomeChange: number;
-  expenseChange: number;
-  rollover: number;
-}
-
-export interface AmountsByYearResult {
+export interface YearlyTrendResult {
   year: number;
-  monthlyIncomes: Record<number, number>;
-  monthlyExpenses: Record<number, number>;
+  incomeSeries: Record<number, number>;
+  expenseSeries: Record<number, number>;
 }
 
 export interface UserInfo {

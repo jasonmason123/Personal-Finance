@@ -11,12 +11,12 @@ export default function TransactionOverallCard({ transaction }: TransactionOvera
         <div className="flex items-center gap-2">
           <div
             className={`w-10 h-10 flex items-center justify-center rounded-full border
-              ${transaction.transactionType === TransactionType.INCOME ? "border-green-500"
-              : transaction.transactionType === TransactionType.EXPENSE ? "border-red-500" : ""}`}
+              ${transaction.type === TransactionType.INCOME ? "border-green-500"
+              : transaction.type === TransactionType.EXPENSE ? "border-red-500" : ""}`}
           >
-            {transaction.transactionType === TransactionType.INCOME ? (
+            {transaction.type === TransactionType.INCOME ? (
               <i className="fa-solid fa-circle-dollar-to-slot text-green-500"></i>
-            ) : transaction.transactionType === TransactionType.EXPENSE ? (
+            ) : transaction.type === TransactionType.EXPENSE ? (
               <i className="fa-solid fa-wallet text-red-500"></i>
             ) : null}
           </div>
@@ -35,11 +35,11 @@ export default function TransactionOverallCard({ transaction }: TransactionOvera
         </div>
         <div>
           <span className={`text-lg font-bold
-              ${transaction.transactionType == TransactionType.EXPENSE ? "text-red-500" :
-                transaction.transactionType == TransactionType.INCOME ? "text-green-500" :
+              ${transaction.type == TransactionType.EXPENSE ? "text-red-500" :
+                transaction.type == TransactionType.INCOME ? "text-green-500" :
                 "text-gray-500"}`}
           >
-            {transaction.transactionType == TransactionType.INCOME ? '+' : '-'}
+            {transaction.type == TransactionType.INCOME ? '+' : '-'}
             {transaction.amount && transaction.amount.toLocaleString("vi-VN", {
               style: "currency",
               currency: "VND"

@@ -1,22 +1,22 @@
-const SIGN_IN_URL = "/api/auth/web/sign-in";
-const SIGN_IN_WITH_GOOGLE_URL = "/api/auth/web/sign-in/google";
-const SIGN_OUT_URL = "/api/auth/web/sign-out";
-const SIGN_UP_URL = "/api/auth/web/sign-up";
-const VERIFY_ACCOUNT_URL = "/api/auth/web/verify-account";
-const RESEND_CODE_URL = "/api/auth/web/verify-account/resend";
-const FORGOT_PASSWORD_REQUEST_URL = "/api/auth/web/request-reset-password";
+const SIGN_IN_WITH_EMAIL_URL = `api/authentication/web/login-email`;
+const SIGN_IN_WITH_GOOGLE_URL = `api/authentication/web/sign-in/google`;
+const SIGN_OUT_URL = `api/authentication/web/logout`;
+const SIGN_UP_URL = `api/authentication/web/sign-up`;
+const VERIFY_ACCOUNT_URL = `api/authentication/web/verify-account`;
+const RESEND_CODE_URL = `api/authentication/web/verify-account/resend`;
+const FORGOT_PASSWORD_REQUEST_URL = `api/authentication/web/request-reset-password`;
 
 /**
  * Signs in a user.
- * @param email - The email of the user.
+ * @param identifier - The email of the user.
  * @param password - The password of the user.
  * @returns A promise that resolves when the user is signed in.
  */
-export function signIn(
-  { email, password }: { email: string; password: string },
+export function signInWithEmail(
+  { identifier, password }: { identifier: string; password: string },
   remember: boolean
 ): Promise<Response> {
-  let url = SIGN_IN_URL;
+  let url = SIGN_IN_WITH_EMAIL_URL;
   if (remember) {
     url += "?remember=true";
   }
@@ -26,7 +26,7 @@ export function signIn(
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ identifier, password }),
     credentials: "include",
   });
 }
@@ -114,7 +114,7 @@ export function forgotPasswordRequest(email: string): Promise<Response> {
 }
 
 export interface AuthenticationApiCaller {
-  signIn: (credentials: { email: string; password: string }, remember: boolean) => Promise<Response>;
+  signInWithEmail: (credentials: { identifier: string; password: string }, remember: boolean) => Promise<Response>;
   signInWithGoogle: (remember: boolean) => void;
   signOut: () => Promise<Response>;
   signUp: (credentials: { email: string; password: string }, isWeb?: boolean) => Promise<Response>;
@@ -124,7 +124,7 @@ export interface AuthenticationApiCaller {
 };
 
 export const authenticationApiCaller: AuthenticationApiCaller = {
-  signIn,
+  signInWithEmail,
   signInWithGoogle,
   signOut,
   signUp,

@@ -1,23 +1,23 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
-import { APP_BASE_URL, AuthenticationResult } from "../../types";
+import { AuthenticationResult } from "../../types";
 import { authenticationApiCaller } from "../../api_caller/AuthenticationApiCaller";
 
 
 export default function SignInForm() {
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isRemembered, setIsRemembered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   // const [isEmailValid, setIsEmailValid] = useState(true);
   const [credentials, setCredentials] = useState({
-    email: "",
+    identifier: "",
     password: "",
   });
 
@@ -27,17 +27,22 @@ export default function SignInForm() {
     try {
       setIsLoading(true);
 
-      await authenticationApiCaller.signIn(credentials, isRemembered)
+      await authenticationApiCaller.signInWithEmail(credentials, isRemembered)
         .then(async (response) => {
+          console.log("Sign in response: ", response);
           var authenticationResult: AuthenticationResult = await response.json();
 
           if (response.ok) {
             // If user successfully authenticated but email not confirmed, redirect to verify account
-            if(authenticationResult.isEmailConfirmed == false) {
-              navigate(`/verify-account/${authenticationResult.confirmationToken}`);
-            } else {
-              window.location.href = APP_BASE_URL;
-            }
+            // if(authenticationResult.isEmailConfirmed == false) {
+            //   navigate(`/verify-account/${authenticationResult.confirmationToken}`);
+            // } else {
+            //   window.location.href = "/";
+            // }
+            window.location.href = "/";
+            // navigate("/");
+          } else if (response.status >= 500) {
+            setErrorMessage("Có lỗi bên phía máy chủ. Vui lòng báo cáo sự cố và thử lại sau.");
           } else {
             const errorMessage = authenticationResult.isLockedOut == true ?
               "Bạn đã nhập sai quá số lần cho phép. Vui lòng thử lại sau 5 phút." :
@@ -47,7 +52,7 @@ export default function SignInForm() {
         });
     } catch (error) {
       console.error("Sign in error: ", error);
-      setErrorMessage("Có lỗi bên phía máy chủ. Vui lòng báo cáo sự cố và thử lại sau.");
+      setErrorMessage("Ứng dụng đang có lỗi. Vui lòng báo cáo sự cố và thử lại sau.");
     } finally {
       setIsLoading(false);
     }
@@ -234,7 +239,7 @@ export default function SignInForm() {
                     placeholder="info@gmail.com"
                     onChange={(e) => setCredentials({
                       ...credentials,
-                      email: e.target.value,
+                      identifier: e.target.value,
                     })}
                   />
                 </div>

@@ -1,6 +1,6 @@
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { statisticsApiCaller } from "../../api_caller/StatisticsApiCaller";
+import { analyticsApiCaller } from "../../api_caller/AnalyticsApiCaller";
 import { useEffect, useState } from "react";
 import Select from "../form/Select";
 
@@ -28,17 +28,17 @@ export default function StatisticsChart() {
 
   const getData = async (year: number) => {
     setLoading(true);
-    await statisticsApiCaller.getMonthlyAmountsByYear(year)
+    await analyticsApiCaller.getYearlyTrend(year)
       .then((result) => {
         let incomeData: number[] = [];
         let expenseData: number[] = [];
         
         const monthlyIncomes = new Map<number, number>(
-          Object.entries(result.monthlyIncomes).map(([key, value]) => [parseInt(key), value as number])
+          Object.entries(result.incomeSeries).map(([key, value]) => [parseInt(key), value as number])
         );
 
         const monthlyExpenses = new Map<number, number>(
-          Object.entries(result.monthlyExpenses).map(([key, value]) => [parseInt(key), value as number])
+          Object.entries(result.expenseSeries).map(([key, value]) => [parseInt(key), value as number])
         );
         
         for (let index = 0; index < 12; index++) {

@@ -1,8 +1,8 @@
 import { UUID } from "crypto";
-import { Category, Option, PagedListResult, TransactionType } from "../types";
+import { Category, Option, TransactionType } from "../types";
 import { buildQueryString } from "../utils";
 
-export async function fetchCategory(categoryId: number): Promise<Category> {
+export async function fetchCategory(categoryId: UUID): Promise<Category> {
   return fetch(`/api/categories/${categoryId}`, {
     method: "GET",
     credentials: "include",
@@ -17,31 +17,27 @@ export async function fetchCategory(categoryId: number): Promise<Category> {
   });
 }
 
-export async function fetchCategoryPagedList(params: { searchString?: string; type: TransactionType; pageNumber: number; pageSize: number; }): Promise<PagedListResult<Category>> {
+export async function fetchCategoryList(params: { searchString?: string; type?: TransactionType; }): Promise<Category[]> {
   const queryString = buildQueryString(params);
   return fetch(`/api/categories/get-list?${queryString}`, {
     method: "GET",
     credentials: "include",
   }).then(async (response) => {
     if (!response.ok) throw new Error("Network response was not ok");
-    const data = (await response.json()) as PagedListResult<Category>;
-    return {
-      ...data,
-      items: data.items.map((c) => ({
-        ...c,
-        createdAt: c.createdAt ? new Date(c.createdAt) : undefined,
-        updatedAt: c.lastUpdatedAt ? new Date(c.lastUpdatedAt) : undefined,
-      })),
-    } as PagedListResult<Category>;
+    const data = (await response.json()) as Category[];
+    return data.map((c) => ({
+      ...c,
+      createdAt: c.createdAt ? new Date(c.createdAt) : undefined,
+      updatedAt: c.lastUpdatedAt ? new Date(c.lastUpdatedAt) : undefined,
+    }));
   });
 }
 
 export async function createCategory(category: Category): Promise<Category> {
-  return fetch(`/api/categories/add`, {
+  return fetch(`/api/categories/create?categoryName=${encodeURIComponent(category.name)}&type=${category.type}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify(category),
   }).then(async (response) => {
     if (!response.ok) throw new Error("Network response was not ok");
     const data = (await response.json()) as Category;
@@ -54,11 +50,10 @@ export async function createCategory(category: Category): Promise<Category> {
 }
 
 export async function updateCategory(category: Category): Promise<Category> {
-  return fetch(`/api/categories/update/${category.id}`, {
-    method: "PUT",
+  return fetch(`/api/categories/update/${category.id}?newName=${encodeURIComponent(category.name)}`, {
+    method: "PATCH",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify(category),
   }).then(async (response) => {
     if (!response.ok) throw new Error("Network response was not ok");
     const data = (await response.json()) as Category;
@@ -79,8 +74,9 @@ export async function deleteCategory(categoryId: UUID): Promise<void> {
   });
 }
 
-export async function fetchCategoryOptions(): Promise<Option[]> {
-  return fetch("/api/categories/get-category-options", {
+export async function fetchCategoryOptions(params: { type: TransactionType }): Promise<Option[]> {
+  const queryString = buildQueryString(params);
+  return fetch(`/api/categories/get-options?${queryString}`, {
     method: "GET",
     credentials: "include",
   }).then(async (response) => {

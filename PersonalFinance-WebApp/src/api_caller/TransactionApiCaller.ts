@@ -7,7 +7,7 @@ import { buildQueryString } from "../utils";
  * @param transactionId - The ID of the transaction to fetch.
  * @returns A promise that resolves to the fetched transaction.
  */
-export async function fetchTransaction(transactionId: number): Promise<Transaction> {
+export async function fetchTransaction(transactionId: UUID): Promise<Transaction> {
   return fetch(`/api/transactions/${transactionId}`, {
     method: "GET",
     credentials: "include",
@@ -22,7 +22,7 @@ export async function fetchTransaction(transactionId: number): Promise<Transacti
       ...data,
       date: data.date ? new Date(data.date) : undefined,
       createdAt: data.createdAt ? new Date(data.createdAt) : undefined,
-      updatedAt: data.updatedAt ? new Date(data.updatedAt) : undefined,
+      updatedAt: data.lastUpdatedAt ? new Date(data.lastUpdatedAt) : undefined,
     }));
 }
 
@@ -33,7 +33,7 @@ export async function fetchTransaction(transactionId: number): Promise<Transacti
  */
 export async function fetchTransactionPagedList(filterParam: TransactionFilterParams): Promise<PagedListResult<Transaction>> {
   const queryString = buildQueryString(filterParam);
-  return fetch(`/api/transactions/get-list?${queryString}`, {
+  return fetch(`/api/transactions/get-paged-list?${queryString}`, {
     method: "GET",
     credentials: "include",
   })
@@ -41,7 +41,8 @@ export async function fetchTransactionPagedList(filterParam: TransactionFilterPa
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
-      return response.json();
+      var res = response.json();
+      return res;
     })
     .then((data: PagedListResult<Transaction>) => ({
       ...data,
@@ -49,7 +50,7 @@ export async function fetchTransactionPagedList(filterParam: TransactionFilterPa
         ...transaction,
         date: transaction.date ? new Date(transaction.date) : undefined,
         createdAt: transaction.createdAt ? new Date(transaction.createdAt) : undefined,
-        updatedAt: transaction.updatedAt ? new Date(transaction.updatedAt) : undefined,
+        updatedAt: transaction.lastUpdatedAt ? new Date(transaction.lastUpdatedAt) : undefined,
       })),
     }));
 }
@@ -60,7 +61,7 @@ export async function fetchTransactionPagedList(filterParam: TransactionFilterPa
  * @returns A promise that resolves to the created transaction.
  */
 export async function createTransaction(transaction: Transaction): Promise<Transaction> {
-  return fetch("/api/transactions/add", {
+  return fetch(`/api/transactions/create`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -82,7 +83,7 @@ export async function createTransaction(transaction: Transaction): Promise<Trans
  */
 export async function updateTransaction(transaction: Transaction): Promise<Transaction> {
   return fetch(`/api/transactions/update/${transaction.id}`, {
-    method: "PUT",
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },

@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);  // Track loading state
 
   useEffect(() => {
-    const isLoggedIn = getCookie("isLoggedIn");
+    const isLoggedIn = getCookie("is_logged_in");
     if (isLoggedIn === "true") {
       setIsAuthenticated(true);
       

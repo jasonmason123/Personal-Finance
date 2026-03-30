@@ -37,12 +37,13 @@ export default function CategoryAddEdit() {
       if (id) {
         result = await updateCategory({ ...category, id: id as UUID });
       } else {
-        result = await createCategory({ name: category.name.trim() });
+        result = await createCategory({ name: category.name.trim(), type: category.type! });
       }
       alert("Đã lưu danh mục thành công!");
       const navigatePath = result.id ? `/categories/${result.id}` : id ? `/categories/${id}` : "/categories";
       navigate(navigatePath);
     } catch (err) {
+      alert("Đã có lỗi xảy ra khi lưu danh mục. Vui lòng thử lại.");
       console.error("Error saving category:", err);
     } finally {
       setLoading(false);
@@ -54,7 +55,7 @@ export default function CategoryAddEdit() {
       setCategory(categoryFromState);
     } else if (!categoryFromState && id) {
       setLoading(true);
-      fetchCategory(parseInt(id))
+      fetchCategory(id as UUID)
         .then((data) => setCategory(data))
         .catch((err) => console.error("Error fetching category:", err))
         .finally(() => setLoading(false));

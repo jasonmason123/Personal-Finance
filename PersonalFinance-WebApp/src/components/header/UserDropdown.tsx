@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
-import { APP_BASE_URL } from "../../types";
 import { authenticationApiCaller } from "../../api_caller/AuthenticationApiCaller";
 import { getUserInfo } from "../../utils";
 import { useAuth } from "../../context/AuthContext";
@@ -17,7 +16,7 @@ export default function UserDropdown() {
       .then((response) => {
         if (response.ok) {
           // Redirect to sign-in page
-          window.location.href = `${APP_BASE_URL}/sign-in`;
+          window.location.href = `/sign-in`;
         } else {
           console.error("Failed to sign out");
         }

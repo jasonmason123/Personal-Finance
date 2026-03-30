@@ -1,9 +1,10 @@
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useEffect, useState } from "react";
-import { statisticsApiCaller } from "../../api_caller/StatisticsApiCaller";
+import { analyticsApiCaller } from "../../api_caller/AnalyticsApiCaller";
+import { DateFilterIso, TransactionType } from "../../types";
 
-export default function ExpenseByCategoryChart() {
+export default function ExpenseBreakdownChart() {
   const today = new Date();
   const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
   const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -13,12 +14,14 @@ export default function ExpenseByCategoryChart() {
 
   const getData = async () => {
     setLoading(true);
-    await statisticsApiCaller.getExpenseByCategoryCustomRange(
-      firstDay.toISOString(),
-      lastDay.toISOString()
+    await analyticsApiCaller.getCategoryBreakdown(
+      DateFilterIso.between(firstDay, lastDay),
+      TransactionType.EXPENSE
     )
       .then((result) => {
-        const labels = Object.keys(result);
+        const labels = Object.keys(result).map(key => 
+          key === "Other" ? "Khác" : key
+        );
         const series = Object.values(result);
 
         setLabels(labels);

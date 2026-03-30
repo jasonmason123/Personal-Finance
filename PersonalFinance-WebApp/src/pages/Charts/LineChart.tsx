@@ -2,7 +2,6 @@ import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
 import LineChartOne from "../../components/chart_components/line/LineChartOne";
 import PageMeta from "../../components/common/PageMeta";
-import { APP_BASE_URL } from "../../types";
 
 export default function LineChart() {
   return (
@@ -13,7 +12,7 @@ export default function LineChart() {
       />
       <PageBreadcrumb pageTitles={[
         {
-          path: `${APP_BASE_URL}/line-chart`,
+          path: `/line-chart`,
           title: "Line Chart",
         }
       ]} />

@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "rimraf ../SpendingTracker-API/wwwroot/app",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -38,6 +37,7 @@
     "@types/node": "^22.15.30",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-basic-ssl": "^2.3.0",
     "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^9.19.0",
     "eslint-plugin-react-hooks": "^5.0.0",

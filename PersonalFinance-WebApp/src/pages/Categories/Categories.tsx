@@ -2,71 +2,40 @@ import ComponentCard from "../../components/common/ComponentCard";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import { useNavigate } from "react-router";
-import Pagination from "../../components/tables/Pagination";
-import { Table, TableBody, TableRow, TableCell, TableFooter } from "../../components/ui/table";
-import { Category, DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE, TransactionType } from "../../types";
+import { Table, TableBody, TableRow, TableCell } from "../../components/ui/table";
+import { Category, TransactionType } from "../../types";
 import { useEffect, useState } from "react";
 import Switch from "../../components/form/switch/Switch";
-// import { fetchCategoryPagedList } from "../../api_caller/CategoryApiCaller";
+import { fetchCategoryList } from "../../api_caller/CategoryApiCaller";
 
 export default function Categories() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedType, setSelectedType] = useState<TransactionType>(TransactionType.EXPENSE);
   const [searchStr, setSearchStr] = useState<string>("");
-  const [searchSwitch, setSearchSwitch] = useState<boolean>(false);
-  const [pageNumber, setPageNumber] = useState<number>(DEFAULT_PAGE_NUMBER);
-  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
-  const [pageCount, setPageCount] = useState<number>(0);
-  const [itemCount, setItemCount] = useState<number>(0);
+  // const [pageNumber, setPageNumber] = useState<number>(DEFAULT_PAGE_NUMBER);
+  // const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
+  // const [pageCount, setPageCount] = useState<number>(0);
+  // const [itemCount, setItemCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
 
+  // Fetch all Categories then filter, since there aren't too many Categories for each user (max 50)
   useEffect(() => {
-    // setLoading(true);
-    // fetchCategoryPagedList({ searchString: searchStr || undefined, type: selectedType, pageNumber, pageSize })
-    //   .then((data) => {
-    //     setCategories(data.items);
-    //     setPageCount(data.pageCount);
-    //     setItemCount(data.itemCount);
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error categories transaction:", error);
-    //   })
-    //   .finally(() => setLoading(false));
-    const categories: Category[] = [
-        {
-            id: "550e8400-e29b-41d4-a716-446655440001",
-            name: "Food & Drinks",
-            type: TransactionType.EXPENSE,
-            createdAt: new Date("2024-01-01"),
-            lastUpdatedAt: new Date("2024-01-01")
-        },
-        {
-            id: "550e8400-e29b-41d4-a716-446655440003",
-            name: "Income",
-            type: TransactionType.INCOME,
-            createdAt: new Date("2024-01-01"),
-            lastUpdatedAt: new Date("2024-01-01")
-        },
-        {
-            id: "550e8400-e29b-41d4-a716-446655440005",
-            name: "Entertainment",
-            type: TransactionType.EXPENSE,
-            createdAt: new Date("2024-01-01"),
-            lastUpdatedAt: new Date("2024-01-01")
-        }
-    ];
-
-    setCategories(categories);
-    setItemCount(categories.length);
-    setPageNumber(DEFAULT_PAGE_NUMBER);
-    setPageCount(1);
-    setLoading(false);
-  }, [searchSwitch, selectedType, pageNumber, pageSize]);
-
-  const onSearch = () => {
-    setSearchSwitch(!searchSwitch);
-  };
+    setLoading(true);
+    fetchCategoryList({})
+      .then((data) => {
+        setCategories(data);
+        // setCategories(data.items);
+        // setPageCount(data.pageCount);
+        // setItemCount(data.itemCount);
+      })
+      .catch((error) => {
+        console.error("Error categories transaction:", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <>
@@ -90,16 +59,11 @@ export default function Categories() {
               <div className="p-4 flex justify-between items-center border-b border-gray-100 dark:border-white/[0.05] flex-col sm:flex-row gap-4">
                 <div className="text-sm text-gray-500 dark:text-gray-400">
                   <Switch
-                    label={`Type: ${selectedType == TransactionType.INCOME ? "Income" : "Expense"}`}
+                    label={`Loại danh mục: ${selectedType == TransactionType.INCOME ? "Thu nhập" : "Chi tiêu"}`}
                     onChange={(e) => setSelectedType(e ? TransactionType.INCOME : TransactionType.EXPENSE)}
                   />
                 </div>
-                <form className="h-11 w-full sm:w-1/4"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    onSearch!== undefined && onSearch();
-                  }}
-                >
+                <form className="h-11 w-full sm:w-1/4">
                   <div className="relative w-full max-w-sm flex items-center">
                     <button
                       type="submit"
@@ -140,14 +104,20 @@ export default function Categories() {
                         Đang tải...
                       </TableCell>
                     </TableRow>
-                  ) : categories.filter(c => c.type == selectedType).length === 0 ? (
+                  ) : categories.filter(c => c.type == selectedType)
+                                .filter(c => searchStr == "" || c.name.toUpperCase().startsWith(searchStr.toUpperCase()))
+                                .length === 0 ?
+                  (
                     <TableRow>
                       <TableCell colSpan={100} className="text-center py-6 text-gray-500 dark:text-gray-400">
                         Không có danh mục nào.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    categories.filter(c => c.type == selectedType).map((c) => (
+                    categories
+                      .filter(c => c.type == selectedType)
+                      .filter(c => searchStr == "" || c.name.toUpperCase().startsWith(searchStr.toUpperCase()))
+                  .map((c) => (
                       <TableRow
                         key={c.id}
                         className="hover:bg-gray-50 group dark:hover:bg-white/[0.05] cursor-pointer"
@@ -170,7 +140,7 @@ export default function Categories() {
                   )}
                 </TableBody>
 
-                <TableFooter>
+                {/* <TableFooter>
                   <TableRow>
                     <TableCell colSpan={100} className="!p-0">
                       <div className="w-full flex justify-between items-center flex-col sm:flex-row px-4 py-3 gap-2">
@@ -194,7 +164,7 @@ export default function Categories() {
                       </div>
                     </TableCell>
                   </TableRow>
-                </TableFooter>
+                </TableFooter> */}
               </Table>
             </div>
           </div>

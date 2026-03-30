@@ -5,6 +5,7 @@ import { Option } from "../../types";
 interface ModalSelectProps {
   options: Option[];
   placeholder?: string;
+  onOpen?: () => void;
   onChange: (value: string) => void;
   required?: boolean;
   className?: string;
@@ -131,7 +132,7 @@ const ModalSelect: React.FC<ModalSelectProps> = ({
                 })
               ) : (
                 <li className="px-4 py-3 text-sm text-gray-400 dark:text-gray-500">
-                  No results found
+                  Không có kết quả
                 </li>
               )}
             </ul>

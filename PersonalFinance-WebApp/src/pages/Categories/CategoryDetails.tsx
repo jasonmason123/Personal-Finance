@@ -2,17 +2,20 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
-import { Category, TransactionType } from "../../types";
+import { Category, Transaction, TransactionFilterParams, TransactionType } from "../../types";
 import ComponentCard from "../../components/common/ComponentCard";
-import { deleteCategory } from "../../api_caller/CategoryApiCaller";
+import { deleteCategory, fetchCategory } from "../../api_caller/CategoryApiCaller";
 import { UUID } from "crypto";
-// import { fetchCategory } from "../../api_caller/CategoryApiCaller";
+import TransactionsTable from "../../components/Transactions/TransactionsTable";
+import { fetchTransactionPagedList } from "../../api_caller/TransactionApiCaller";
 
 export default function CategoryDetails() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
   const [category, setCategory] = useState<Category | undefined>();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const toEditPage = () => {
     navigate(`/categories/${category?.id}/edit`, {
@@ -31,20 +34,35 @@ export default function CategoryDetails() {
   }
 
   useEffect(() => {
+    if (!id) return;
     setLoading(true);
-    // if (!id) return;
-    // fetchCategory(parseInt(id))
-    //   .then((data) => setCategory(data))
-    //   .catch((err) => console.error("Error fetching category:", err));
+    fetchCategory(id as UUID)
+      .then((data) => setCategory(data))
+      .catch((err) => console.error("Error fetching category:", err));
 
-    setCategory({
-      id: "550e8400-e29b-41d4-a716-446655440001",
-      name: "Food & Drinks",
-      createdAt: new Date("2024-01-01"),
-      lastUpdatedAt: new Date("2024-01-01")
-    });
     setLoading(false);
   }, [id]);
+
+  useEffect(() => {
+    setLoadingTransactions(true);
+
+    var filterParam: TransactionFilterParams = {
+      pageNumber: 1,
+      pageSize: 10,
+      categoryId: id as UUID,
+    };
+
+    fetchTransactionPagedList(filterParam)
+      .then((data) => {
+        setTransactions(data.items ?? []);
+      })
+      .catch((error) => {
+        console.error("Error fetching transactions:", error);
+      })
+      .finally(() => {
+        setLoadingTransactions(false);
+      });
+  }, []);
 
   return (
     <>
@@ -59,38 +77,57 @@ export default function CategoryDetails() {
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
         <div className="space-y-6">
           {loading ? (
-            <div>Đang tải...</div>
+            <div className="dark:text-white">
+              Đang tải...
+            </div>
           ) : (
-            <ComponentCard
-              title="Chi tiết danh mục"
-              actions={[
-                {
-                  actionName: "Cập nhật",
-                  action: toEditPage,
-                  icon: <i className="fa-solid fa-pencil"></i>,
-                },
-                {
-                  actionName: "Xóa",
-                  action: localDeleteCategory,
-                  icon: <i className="fa-solid fa-trash"></i>,
-                },
-              ]}
-            >
-              <div className="space-y-3 text-sm">
-                <div>
-                  <span className="text-gray-500">Tên:</span> <span className="dark:text-white">{category?.name}</span>
+            <>
+              <ComponentCard
+                title="Chi tiết danh mục"
+                actions={[
+                  {
+                    actionName: "Cập nhật",
+                    action: toEditPage,
+                    icon: <i className="fa-solid fa-pencil"></i>,
+                  },
+                  {
+                    actionName: "Xóa",
+                    action: localDeleteCategory,
+                    icon: <i className="fa-solid fa-trash"></i>,
+                  },
+                ]}
+              >
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <span className="text-gray-500">Tên:</span> <span className="dark:text-white">{category?.name}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Loại:</span> <span className="dark:text-white">{category?.type == TransactionType.INCOME ? "Thu nhập" : "Chi tiêu"}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Tạo lúc:</span> <span className="dark:text-white">{category?.createdAt && new Date(category.createdAt).toLocaleString("vi-VN")}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Cập nhật lúc:</span> <span className="dark:text-white">{category?.lastUpdatedAt && new Date(category.lastUpdatedAt).toLocaleString("vi-VN")}</span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-gray-500">Loại:</span> <span className="dark:text-white">{category?.type == TransactionType.INCOME ? "Thu nhập" : "Chi tiêu"}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Tạo lúc:</span> <span className="dark:text-white">{category?.createdAt && new Date(category.createdAt).toLocaleString("vi-VN")}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Cập nhật lúc:</span> <span className="dark:text-white">{category?.lastUpdatedAt && new Date(category.lastUpdatedAt).toLocaleString("vi-VN")}</span>
-                </div>
-              </div>
-            </ComponentCard>
+              </ComponentCard>
+              <ComponentCard
+                title="Giao dịch liên quan"
+              >
+                {loadingTransactions ? (
+                  <div className="dark:text-white">
+                    Đang tải giao dịch...
+                  </div>
+                ) : (
+                  <TransactionsTable
+                    fetchTransactions={false}
+                    defaultTransactions={transactions}
+                  />
+                )}
+                
+              </ComponentCard>
+            </>
           )}
         </div>
       </div>

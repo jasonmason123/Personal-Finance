@@ -2,7 +2,6 @@ import { useNavigate, useParams } from "react-router";
 import Input from "../form/input/InputField";
 import { useState } from "react";
 import { authenticationApiCaller } from "../../api_caller/AuthenticationApiCaller";
-import { APP_BASE_URL } from "../../types";
 
 
 export default function VerifyAccountForm() {
@@ -45,7 +44,7 @@ export default function VerifyAccountForm() {
       await authenticationApiCaller.verifyAccount(confirmationToken as string, code)
         .then(async (res) => {
           if (res.ok) {
-            window.location.href = APP_BASE_URL;
+            window.location.href = "/";
           } else {
             const err = await res.text();
             console.error("Verification failed:", err);

@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import { Suspense, lazy } from "react";
-import { APP_BASE_URL } from "./types";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -37,7 +36,7 @@ const CategoryAddEdit = lazy(() => import("./pages/Categories/CategoryAddEdit"))
 export default function App() {
   return (
     <AuthProvider>
-      <Router basename={APP_BASE_URL}>
+      <Router>
         <ScrollToTop />
         <Suspense fallback={<div className="text-center py-10">Đang tải...</div>}>
           <Routes>
