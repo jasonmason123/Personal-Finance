@@ -47,11 +47,11 @@ namespace PersonalFinance.Application.Analytics.Queries
 
             // Execute Grouping and Summation
             return await query
-                .GroupBy(x => x._Category.Name)
+                .GroupBy(x => x._Category.Name ?? "Other")
                 .Select(g => new
                 {
                     Name = g.Key,
-                    // Using (decimal?) handles empty categories safely
+                    // (decimal?) handles empty categories safely within the sum
                     Total = g.Sum(x => (decimal?)x.Amount) ?? 0
                 })
                 .ToDictionaryAsync(
@@ -62,14 +62,15 @@ namespace PersonalFinance.Application.Analytics.Queries
 
         public async Task<YearlyIncomeExpenseSeriesResult> GetAnnualTrendAsync(string userId, int year)
         {
-            var firstDayOfYear = new DateTime(year, 1, 1);
-            var lastDayOfYear = new DateTime(year, 12, 31);
+            // PostgreSQL requires to set DateTimeKind
+            var startOfYear = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            var endOfYear = new DateTime(year, 12, 31, 23, 59, 59, DateTimeKind.Utc);
 
             // 1. Fetch grouped data from DB (Single Query)
             var monthlyData = await appDbContext.T_Transactions
                 .Where(x => x.UserId == userId
-                        && x.Date >= firstDayOfYear
-                        && x.Date <= lastDayOfYear)
+                        && x.Date >= startOfYear
+                        && x.Date <= endOfYear)
                 .GroupBy(x => new { x.Date.Month, x.Type })
                 .Select(g => new
                 {
