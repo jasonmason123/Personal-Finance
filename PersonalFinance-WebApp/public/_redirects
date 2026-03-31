@@ -1,2 +1,2 @@
-/* /index.html   200
-/api/* https://personal-finance-232t.onrender.com  200
+/api/* https://personal-finance-232t.onrender.com/api/:splat  200
+/* /index.html                                    200
