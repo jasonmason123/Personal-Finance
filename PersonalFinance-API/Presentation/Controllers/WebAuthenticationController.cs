@@ -176,7 +176,6 @@ namespace PersonalFinance.Presentation.Controllers
             var userObj = new
             {
                 username = user.UserName,
-                email = user.Email,
                 dateJoined = user.CreatedAt,
             };
             var json = JsonSerializer.Serialize(userObj);

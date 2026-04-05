@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PersonalFinance.Application.Analytics.Queries;
 using PersonalFinance.Application.Analytics.Validations;
+using PersonalFinance.Application.AppUser;
 using PersonalFinance.Application.Authentication;
 using PersonalFinance.Application.Category.Commands;
 using PersonalFinance.Application.Category.Queries;
@@ -43,6 +44,7 @@ builder.Services.AddScoped<ICategoryCommands, CategoryCommands>();
 builder.Services.AddScoped<ITransactionQueries, TransactionQueries>();
 builder.Services.AddScoped<ITransactionCommands, TransactionCommands>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IProfileManager, ProfileManager>();
 // Validations
 builder.Services.AddScoped<CategoryValidations>();
 builder.Services.AddScoped<AnalyticsValidations>();

@@ -16,6 +16,13 @@
             }
         }
 
+        public static class Profile
+        {
+            public const string Base = $"{ApiRoutes.Base}/profile";
+            public const string GetProfile = "get-profile";
+            public const string ChangePassword = "change-password";
+        }
+
         public static class Analytics
         {
             public const string Base = $"{ApiRoutes.Base}/analytics";
