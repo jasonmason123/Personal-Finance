@@ -144,6 +144,6 @@ export interface YearlyTrendResult {
 
 export interface UserInfo {
   username: string;
-  email: string;
+  email?: string;
   dateJoined: string;
 }

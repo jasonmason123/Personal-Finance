@@ -1,13 +1,20 @@
-import { useAuth } from "../../context/AuthContext";
+import { UserInfo } from "../../types";
 import avatar from "/images/user/avatar.png";
+import { useI18n } from "../../context/I18nContext";
 
-export default function UserMetaCard() {
-  const { username, email, dateJoined } = useAuth();
-  const dateJoinedDate = new Date(dateJoined);
+function formatJoinedDate(dateJoined: string): string {
+  if (!dateJoined) return "—";
+  const d = new Date(dateJoined);
+  if (Number.isNaN(d.getTime())) return "—";
+  return `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}/${d.getFullYear()}`;
+}
 
-  const formattedDate = `${dateJoinedDate.getDate().toString().padStart(2, "0")}/${
-    (dateJoinedDate.getMonth() + 1).toString().padStart(2, "0")
-  }/${dateJoinedDate.getFullYear()}`;
+export default function UserMetaCard({ profile }: { profile: UserInfo }) {
+  const { t } = useI18n();
+  const { username, email, dateJoined } = profile;
+  const formattedDate = formatJoinedDate(dateJoined);
 
   return (
     <>
@@ -19,15 +26,15 @@ export default function UserMetaCard() {
             </div>
             <div className="order-3 xl:order-2">
               <h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
-                {username}
+                {username || "—"}
               </h4>
               <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {email}
+                  {email || "—"}
                 </p>
                 <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Gia nhập vào ngày: <span>{formattedDate}</span>
+                  {t("profile.joinedOn", "Joined on")}: <span>{formattedDate}</span>
                 </p>
               </div>
             </div>

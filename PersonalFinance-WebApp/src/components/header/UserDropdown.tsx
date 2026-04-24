@@ -4,12 +4,14 @@ import { Dropdown } from "../ui/dropdown/Dropdown";
 import { authenticationApiCaller } from "../../api_caller/AuthenticationApiCaller";
 import { getUserInfo } from "../../utils";
 import { useAuth } from "../../context/AuthContext";
+import { useI18n } from "../../context/I18nContext";
 import avatar from "/images/user/avatar.png";
 
 export default function UserDropdown() {
+  const { t, locale } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
 
-  const { username, email } = useAuth();
+  const { username, dateJoined } = useAuth();
 
   function handleSignOut() {
     authenticationApiCaller.signOut()
@@ -79,7 +81,7 @@ export default function UserDropdown() {
             {username}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            {email}
+            {dateJoined ? `${t("profile.joinedOn", "Joined on")} ${new Date(dateJoined).toLocaleDateString(locale)}` : t("common.loading", "Loading...")}
           </span>
         </div>
 
@@ -106,14 +108,14 @@ export default function UserDropdown() {
                   fill=""
                 />
               </svg>
-              Edit profile
+              {t("header.userDropdown.profile", "Profile")}
             </DropdownItem>
           </li>
           <li>
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
-              to="/profile"
+              to="/settings"
               className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
               <svg
@@ -131,7 +133,7 @@ export default function UserDropdown() {
                   fill=""
                 />
               </svg>
-              Account settings
+              {t("header.userDropdown.settings", "Settings")}
             </DropdownItem>
           </li>
           <li>
@@ -156,7 +158,7 @@ export default function UserDropdown() {
                   fill=""
                 />
               </svg>
-              Support
+              {t("header.userDropdown.support", "Support")}
             </DropdownItem>
           </li>
         </ul>
@@ -179,7 +181,7 @@ export default function UserDropdown() {
               fill=""
             />
           </svg>
-          Đăng xuất
+          {t("header.userDropdown.signOut", "Sign out")}
         </button>
       </Dropdown>
     </div>

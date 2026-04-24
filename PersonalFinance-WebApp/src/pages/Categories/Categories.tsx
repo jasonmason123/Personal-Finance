@@ -7,9 +7,11 @@ import { Category, TransactionType } from "../../types";
 import { useEffect, useState } from "react";
 import Switch from "../../components/form/switch/Switch";
 import { fetchCategoryList } from "../../api_caller/CategoryApiCaller";
+import { useI18n } from "../../context/I18nContext";
 
 export default function Categories() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedType, setSelectedType] = useState<TransactionType>(TransactionType.EXPENSE);
   const [searchStr, setSearchStr] = useState<string>("");
@@ -39,15 +41,18 @@ export default function Categories() {
 
   return (
     <>
-      <PageMeta title="Danh mục" description="Quản lý danh mục" />
-      <PageBreadcrumb pageTitles={[{ title: "Danh mục", path: "/categories" }]} />
+      <PageMeta
+        title={t("categories.title", "Categories")}
+        description={t("categories.description", "Category management")}
+      />
+      <PageBreadcrumb pageTitles={[{ title: t("categories.title", "Categories"), path: "/categories" }]} />
       <div className="space-y-6">
         <ComponentCard
-          title="Danh sách danh mục"
+          title={t("categories.listTitle", "Category list")}
           actions={
             [
               {
-                actionName: "Thêm danh mục",
+                actionName: t("categories.addAction", "Add category"),
                 action: () => navigate("/categories/add"),
                 icon: <i className="fa-solid fa-plus"></i>,
               },
@@ -59,7 +64,11 @@ export default function Categories() {
               <div className="p-4 flex justify-between items-center border-b border-gray-100 dark:border-white/[0.05] flex-col sm:flex-row gap-4">
                 <div className="text-sm text-gray-500 dark:text-gray-400">
                   <Switch
-                    label={`Loại danh mục: ${selectedType == TransactionType.INCOME ? "Thu nhập" : "Chi tiêu"}`}
+                    label={`${t("categories.typeLabel", "Category type")}: ${
+                      selectedType == TransactionType.INCOME
+                        ? t("categories.incomeType", "Income")
+                        : t("categories.expenseType", "Expense")
+                    }`}
                     onChange={(e) => setSelectedType(e ? TransactionType.INCOME : TransactionType.EXPENSE)}
                   />
                 </div>
@@ -89,7 +98,7 @@ export default function Categories() {
                       value={searchStr}
                       onChange={(e) => setSearchStr(e.target.value)}
                       type="text"
-                      placeholder="Tìm kiếm..."
+                      placeholder={t("categories.searchPlaceholder", "Search...")}
                       className="w-full pl-9 pr-3 py-1.5 text-sm rounded-md border border-gray-300 bg-white text-gray-800 shadow-sm shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:outline-hidden focus:ring-brand-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-white/40 dark:focus:border-brand-400 dark:focus:ring-brand-800"
                     />
                   </div>
@@ -101,7 +110,7 @@ export default function Categories() {
                   {loading ? (
                     <TableRow>
                       <TableCell colSpan={100} className="text-center py-6 text-gray-500 dark:text-gray-400">
-                        Đang tải...
+                        {t("categories.loading", "Loading...")}
                       </TableCell>
                     </TableRow>
                   ) : categories.filter(c => c.type == selectedType)
@@ -110,7 +119,7 @@ export default function Categories() {
                   (
                     <TableRow>
                       <TableCell colSpan={100} className="text-center py-6 text-gray-500 dark:text-gray-400">
-                        Không có danh mục nào.
+                        {t("categories.empty", "No categories found.")}
                       </TableCell>
                     </TableRow>
                   ) : (

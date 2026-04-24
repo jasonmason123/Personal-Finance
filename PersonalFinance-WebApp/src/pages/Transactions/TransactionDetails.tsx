@@ -11,9 +11,11 @@ import TransactionInfoCard from "../../components/Transactions/TransactionInfoCa
 import ComponentCard from "../../components/common/ComponentCard";
 import { deleteTransaction, fetchTransaction } from "../../api_caller/TransactionApiCaller";
 import { UUID } from "crypto";
+import { useI18n } from "../../context/I18nContext";
 
 export default function TransactionDetails() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [transaction, setTransaction] = useState<Transaction>({});
   
@@ -26,10 +28,10 @@ export default function TransactionDetails() {
   }
 
   const localDeleteTransaction = async () => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa giao dịch này?")) {
+    if (window.confirm(t("transactions.details.confirmDelete", "Are you sure you want to delete this transaction?"))) {
       await deleteTransaction(transaction.id! as UUID)
         .then(() => {
-          alert("Giao dịch đã được xóa thành công.");
+          alert(t("transactions.details.successDeleted", "Transaction deleted successfully."));
           navigate("/transactions");
         });
     }
@@ -47,26 +49,29 @@ export default function TransactionDetails() {
 
   return (
     <>
-      <PageMeta title="Giao dịch" description="Giao dịch tài chính" />
+      <PageMeta
+        title={t("transactions.title", "Transactions")}
+        description={t("transactions.description", "Financial transactions")}
+      />
       <PageBreadcrumb pageTitles={[
-          { title: "Giao dịch", path: "/transactions" },
-          { title: "Chi tiết giao dịch", path: `/transactions/${transactionId}` }
+          { title: t("transactions.title", "Transactions"), path: "/transactions" },
+          { title: t("transactions.details.title", "Transaction details"), path: `/transactions/${transactionId}` }
         ]} />
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
         <div className="space-y-6">
           {loading ? (
-            <p className="text-center text-gray-500 dark:text-white/50">Đang tải...</p>
+            <p className="text-center text-gray-500 dark:text-white/50">{t("transactions.loading", "Loading...")}</p>
           ) : (
             <ComponentCard
-              title="Chi tiết giao dịch"
+              title={t("transactions.details.title", "Transaction details")}
               actions={[
                 {
-                  actionName: "Cập nhật",
+                  actionName: t("transactions.details.editAction", "Edit"),
                   action: toEditPage,
                   icon: <i className="fa-solid fa-pencil"></i>,
                 },
                 {
-                  actionName: "Xóa",
+                  actionName: t("transactions.details.deleteAction", "Delete"),
                   action: localDeleteTransaction,
                   icon: <i className="fa-solid fa-trash"></i>,
                 },

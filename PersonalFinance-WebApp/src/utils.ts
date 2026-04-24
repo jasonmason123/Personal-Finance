@@ -79,7 +79,6 @@ export function getUserInfo(): UserInfo | null {
     const info = JSON.parse(json);
     return {
       username: info.username,
-      email: info.email,
       dateJoined: info.dateJoined
     }
   } catch (err) {

@@ -3,13 +3,13 @@ import { Suspense, lazy } from "react";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import { useI18n } from "./context/I18nContext";
 
 // Lazy imports so that the initial load is faster
 const SignIn = lazy(() => import("./pages/AuthPages/SignIn"));
 const SignUp = lazy(() => import("./pages/AuthPages/SignUp"));
 const VerifyAccount = lazy(() => import("./pages/AuthPages/VerifyAccount"));
 const ForgotPassword = lazy(() => import("./pages/AuthPages/ForgotPassword"));
-const DeveloperInfo = lazy(() => import("./pages/DeveloperInfo"));
 const Videos = lazy(() => import("./pages/UiElements/Videos"));
 const Images = lazy(() => import("./pages/UiElements/Images"));
 const Alerts = lazy(() => import("./pages/UiElements/Alerts"));
@@ -28,17 +28,20 @@ const Transactions = lazy(() => import("./pages/Transactions/Transactions"));
 const TransactionDetails = lazy(() => import("./pages/Transactions/TransactionDetails"));
 const TransactionAddEdit = lazy(() => import("./pages/Transactions/TransactionAddEdit"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
+const Settings = lazy(() => import("./pages/Settings"));
 const Categories = lazy(() => import("./pages/Categories/Categories"));
 const CategoryDetails = lazy(() => import("./pages/Categories/CategoryDetails"));
 const CategoryAddEdit = lazy(() => import("./pages/Categories/CategoryAddEdit"));
-// import NotFound from "./pages/OtherPage/NotFound";
+const NotFound = lazy(() => import("./pages/OtherPage/NotFound"));
 
 export default function App() {
+  const { t } = useI18n();
+
   return (
     <AuthProvider>
       <Router>
         <ScrollToTop />
-        <Suspense fallback={<div className="text-center py-10">Đang tải...</div>}>
+        <Suspense fallback={<div className="text-center py-10">{t("common.loading", "Loading...")}</div>}>
           <Routes>
             {/* Dashboard Layout */}
             <Route element={
@@ -61,8 +64,8 @@ export default function App() {
               <Route path="categories/:id/edit" element={<CategoryAddEdit />} />
 
               {/* Others Page */}
-              <Route path="developer" element={<DeveloperInfo />} />
               <Route path="profile" element={<UserProfile />} />
+              <Route path="settings" element={<Settings />} />
               <Route path="calendar" element={<Calendar />} />
               <Route path="blank" element={<Blank />} />
 
@@ -92,7 +95,7 @@ export default function App() {
             <Route path="forgot-password" element={<ForgotPassword />} />
 
             {/* Fallback Route */}
-            {/* <Route path="*" element={<NotFound />} /> */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </Router>

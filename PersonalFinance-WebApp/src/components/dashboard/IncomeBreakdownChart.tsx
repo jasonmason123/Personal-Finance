@@ -3,8 +3,10 @@ import { ApexOptions } from "apexcharts";
 import { useEffect, useState } from "react";
 import { analyticsApiCaller } from "../../api_caller/AnalyticsApiCaller";
 import { DateFilterIso, TransactionType } from "../../types";
+import { useI18n } from "../../context/I18nContext";
 
 export default function IncomeBreakdownChart() {
+  const { t, locale } = useI18n();
   const today = new Date();
   const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
   const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -39,7 +41,7 @@ export default function IncomeBreakdownChart() {
   }, []);
 
   const formatterVND = (value: number) =>
-    value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+    value.toLocaleString(locale, { style: "currency", currency: "VND" });
 
   const options: ApexOptions = {
     chart: {
@@ -65,15 +67,19 @@ export default function IncomeBreakdownChart() {
     <div className="rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
       <div className="w-full">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Cơ cấu thu nhập theo danh mục
+          {t("dashboard.incomeBreakdownTitle", "Income breakdown by category")}
         </h3>
         <p className="mt-1 text-gray-500 text-theme-sm dark:text-gray-400">
-          Tháng {today.getMonth() + 1}/{today.getFullYear()}
+          {t("dashboard.monthYear", "Month {month}/{year}")
+            .replace("{month}", String(today.getMonth() + 1))
+            .replace("{year}", String(today.getFullYear()))}
         </p>
       </div>
 
       {loading ? (
-        <div className="h-[330px] flex items-center justify-center">Đang tải...</div>
+        <div className="h-[330px] flex items-center justify-center">
+          {t("common.loading", "Loading...")}
+        </div>
       ) : (
         <div className="max-w-full overflow-x-auto custom-scrollbar">
           <div className="min-w-[1000px] xl:min-w-full">

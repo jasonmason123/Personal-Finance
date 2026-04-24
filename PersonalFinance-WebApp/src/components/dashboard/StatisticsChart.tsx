@@ -3,8 +3,10 @@ import { ApexOptions } from "apexcharts";
 import { analyticsApiCaller } from "../../api_caller/AnalyticsApiCaller";
 import { useEffect, useState } from "react";
 import Select from "../form/Select";
+import { useI18n } from "../../context/I18nContext";
 
 export default function StatisticsChart() {
+  const { t } = useI18n();
   const today = new Date();
   const currentYear = today.getFullYear();
   const monthSeries = Array.from({ length: 12 }, (_, i) =>
@@ -49,11 +51,11 @@ export default function StatisticsChart() {
 
         const newSeries = [
           {
-            name: "Thu nhập",
+            name: t("dashboard.incomeSeries", "Income"),
             data: incomeData,
           },
           {
-            name: "Chi tiêu",
+            name: t("dashboard.expenseSeries", "Expense"),
             data: expenseData,
           }
         ];
@@ -173,16 +175,16 @@ export default function StatisticsChart() {
       <div className="flex flex-col gap-5 mb-6 sm:flex-row sm:justify-between">
         <div className="w-full">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-            Thống kê theo năm
+            {t("dashboard.statisticsByYearTitle", "Yearly statistics")}
           </h3>
           <p className="mt-1 text-gray-500 text-theme-sm dark:text-gray-400">
-            Thống kê thu chi theo năm
+            {t("dashboard.statisticsByYearDescription", "Yearly income and expense statistics")}
           </p>
         </div>
         <div className="flex items-start w-full gap-3 sm:justify-end">
           <Select
             options={yearOptions}
-            placeholder="Chọn năm"
+            placeholder={t("dashboard.selectYear", "Select year")}
             defaultValue={selectedYear + ""}
             className="w-32"
             onChange={(value) => {
@@ -194,7 +196,9 @@ export default function StatisticsChart() {
       </div>
 
       {loading ? (
-        <div className="h-[330px] flex items-center justify-center">Đang tải...</div>
+        <div className="h-[330px] flex items-center justify-center">
+          {t("common.loading", "Loading...")}
+        </div>
       ) : (
         <div className="max-w-full overflow-x-auto custom-scrollbar">
           <div className="min-w-[1000px] xl:min-w-full">

@@ -1,11 +1,13 @@
 import { FlagBoolean } from "../types";
 import Badge from "./ui/badge/Badge";
+import { useI18n } from "../context/I18nContext";
 
 interface MetaDataCardProps {
     entity: any;
 }
 
 export default function MetaDataCard({ entity }: MetaDataCardProps) {
+  const { locale } = useI18n();
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -20,7 +22,7 @@ export default function MetaDataCard({ entity }: MetaDataCardProps) {
                 Được tạo vào ngày
               </p>
               <p className="text-sm font-bold text-gray-800 dark:text-white/90">
-                {entity?.dateCreated && new Date(entity.dateCreated).toLocaleDateString("vi-VN", {
+                {entity?.dateCreated && new Date(entity.dateCreated).toLocaleDateString(locale, {
                   year: "numeric",
                   month: "2-digit",
                   day: "2-digit",
@@ -34,7 +36,7 @@ export default function MetaDataCard({ entity }: MetaDataCardProps) {
                   Lần cập nhật gần nhất
                 </p>
                 <p className="text-sm font-bold text-gray-800 dark:text-white/90">
-                  {entity?.dateUpdated?.toLocaleDateString("vi-VN", {
+                  {entity?.dateUpdated?.toLocaleDateString(locale, {
                     year: "numeric",
                     month: "2-digit",
                     day: "2-digit",

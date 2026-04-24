@@ -1,10 +1,12 @@
 import { Transaction, TransactionType } from "../../types";
+import { useI18n } from "../../context/I18nContext";
 
 interface TransactionOverallCardProps {
     transaction: Transaction;
 }
 
 export default function TransactionOverallCard({ transaction }: TransactionOverallCardProps) {
+  const { locale } = useI18n();
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
       <div className="flex items-center justify-between gap-2">
@@ -25,7 +27,7 @@ export default function TransactionOverallCard({ transaction }: TransactionOvera
                 {transaction.title}
             </div>
             <div className="text-sm text-gray-400">
-              <b>{(transaction.date && transaction.date.toLocaleDateString("vi-VN", {
+              <b>{(transaction.date && transaction.date.toLocaleDateString(locale, {
                   year: "numeric",
                   month: "2-digit",
                   day: "2-digit",
@@ -40,7 +42,7 @@ export default function TransactionOverallCard({ transaction }: TransactionOvera
                 "text-gray-500"}`}
           >
             {transaction.type == TransactionType.INCOME ? '+' : '-'}
-            {transaction.amount && transaction.amount.toLocaleString("vi-VN", {
+            {transaction.amount && transaction.amount.toLocaleString(locale, {
               style: "currency",
               currency: "VND"
             })}

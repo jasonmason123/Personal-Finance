@@ -8,9 +8,11 @@ import { deleteCategory, fetchCategory } from "../../api_caller/CategoryApiCalle
 import { UUID } from "crypto";
 import TransactionsTable from "../../components/Transactions/TransactionsTable";
 import { fetchTransactionPagedList } from "../../api_caller/TransactionApiCaller";
+import { useI18n } from "../../context/I18nContext";
 
 export default function CategoryDetails() {
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
@@ -24,10 +26,10 @@ export default function CategoryDetails() {
   }
   
   const localDeleteCategory = async () => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa danh mục này?")) {
+    if (window.confirm(t("categories.details.confirmDelete", "Are you sure you want to delete this category?"))) {
       await deleteCategory(category?.id! as UUID)
         .then(() => {
-          alert("Danh mục đã được xóa thành công.");
+          alert(t("categories.details.successDeleted", "Category deleted successfully."));
           navigate("/categories");
         });
     }
@@ -66,10 +68,13 @@ export default function CategoryDetails() {
 
   return (
     <>
-      <PageMeta title={`Danh mục #${id}`} description={`Thông tin danh mục ${category?.name}`} />
+      <PageMeta
+        title={`${t("categories.title", "Categories")} #${id}`}
+        description={`${t("categories.details.title", "Category details")} ${category?.name ?? ""}`}
+      />
       <PageBreadcrumb
         pageTitles={[
-          { title: "Danh mục", path: "/categories" },
+          { title: t("categories.title", "Categories"), path: "/categories" },
           { title: category?.name || "", path: `/categories/${id}` },
         ]}
       />
@@ -78,20 +83,20 @@ export default function CategoryDetails() {
         <div className="space-y-6">
           {loading ? (
             <div className="dark:text-white">
-              Đang tải...
+              {t("categories.loading", "Loading...")}
             </div>
           ) : (
             <>
               <ComponentCard
-                title="Chi tiết danh mục"
+                title={t("categories.details.title", "Category details")}
                 actions={[
                   {
-                    actionName: "Cập nhật",
+                    actionName: t("categories.details.editAction", "Edit"),
                     action: toEditPage,
                     icon: <i className="fa-solid fa-pencil"></i>,
                   },
                   {
-                    actionName: "Xóa",
+                    actionName: t("categories.details.deleteAction", "Delete"),
                     action: localDeleteCategory,
                     icon: <i className="fa-solid fa-trash"></i>,
                   },
@@ -99,25 +104,25 @@ export default function CategoryDetails() {
               >
                 <div className="space-y-3 text-sm">
                   <div>
-                    <span className="text-gray-500">Tên:</span> <span className="dark:text-white">{category?.name}</span>
+                    <span className="text-gray-500">{t("categories.details.nameLabel", "Name")}:</span> <span className="dark:text-white">{category?.name}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Loại:</span> <span className="dark:text-white">{category?.type == TransactionType.INCOME ? "Thu nhập" : "Chi tiêu"}</span>
+                    <span className="text-gray-500">{t("categories.details.typeLabel", "Type")}:</span> <span className="dark:text-white">{category?.type == TransactionType.INCOME ? t("categories.incomeType", "Income") : t("categories.expenseType", "Expense")}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Tạo lúc:</span> <span className="dark:text-white">{category?.createdAt && new Date(category.createdAt).toLocaleString("vi-VN")}</span>
+                    <span className="text-gray-500">{t("categories.details.createdAtLabel", "Created at")}:</span> <span className="dark:text-white">{category?.createdAt && new Date(category.createdAt).toLocaleString(locale)}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Cập nhật lúc:</span> <span className="dark:text-white">{category?.lastUpdatedAt && new Date(category.lastUpdatedAt).toLocaleString("vi-VN")}</span>
+                    <span className="text-gray-500">{t("categories.details.updatedAtLabel", "Updated at")}:</span> <span className="dark:text-white">{category?.lastUpdatedAt && new Date(category.lastUpdatedAt).toLocaleString(locale)}</span>
                   </div>
                 </div>
               </ComponentCard>
               <ComponentCard
-                title="Giao dịch liên quan"
+                title={t("categories.details.recentTransactionsTitle", "Related transactions")}
               >
                 {loadingTransactions ? (
                   <div className="dark:text-white">
-                    Đang tải giao dịch...
+                    {t("categories.details.loadingTransactions", "Loading transactions...")}
                   </div>
                 ) : (
                   <TransactionsTable

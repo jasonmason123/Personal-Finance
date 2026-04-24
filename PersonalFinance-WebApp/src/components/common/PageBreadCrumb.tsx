@@ -1,11 +1,14 @@
 import { Link } from "react-router";
 import { PageTitle } from "../../types";
+import { useI18n } from "../../context/I18nContext";
 
 interface BreadcrumbProps {
   pageTitles: PageTitle[];
 }
 
 const PageBreadcrumb: React.FC<BreadcrumbProps> = ({ pageTitles }) => {
+  const { t } = useI18n();
+
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
       <h2
@@ -21,7 +24,7 @@ const PageBreadcrumb: React.FC<BreadcrumbProps> = ({ pageTitles }) => {
               className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400"
               to="/"
             >
-              Trang chủ
+              {t("common.home", "Home")}
             </Link>
           </li>
           {pageTitles.map((title, index) => (

@@ -3,13 +3,16 @@ import PageMeta from "../../components/common/PageMeta";
 import MonthlyOverall from "../../components/dashboard/MonthlyOverall";
 import ExpenseBreakdownChart from "../../components/dashboard/ExpenseBreakdownChart";
 import IncomeBreakdownChart from "../../components/dashboard/IncomeBreakdownChart";
+import { useI18n } from "../../context/I18nContext";
 
 export default function Home() {
+  const { t } = useI18n();
+
   return (
     <>
       <PageMeta
-        title="Home"
-        description="Home/Dashboard"
+        title={t("dashboard.title", "Home")}
+        description={t("dashboard.description", "Dashboard")}
       />
 
       <div className="grid grid-cols-12 gap-4 md:gap-6">

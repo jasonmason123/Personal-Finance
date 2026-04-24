@@ -7,7 +7,7 @@ TableRow,
 } from "../ui/table";
   
 import {  DateFilterIso, DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE, Transaction, TransactionFilterParams, TransactionType } from "../../types";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import React from "react";
 import { useNavigate } from "react-router";
 import Pagination from "../tables/Pagination";
@@ -15,20 +15,12 @@ import DatePicker from "../form/date-picker"; // Add this import if not present
 import flatpickr from "flatpickr"; // Add this import if not present
 import { fetchTransactionPagedList } from "../../api_caller/TransactionApiCaller";
 import { UUID } from "crypto";
+import { useI18n } from "../../context/I18nContext";
 
-/** Stable local calendar day (YYYY-MM-DD) for grouping — avoids toLocaleDateString quirks and invalid Date collapsing. */
-function getLocalDateKey(d: Date): string | null {
-  if (Number.isNaN(d.getTime())) return null;
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function parseLocalDateKeyForDisplay(key: string): string {
+function parseLocalDateKeyForDisplay(key: string, locale: string): string {
   const [y, m, day] = key.split("-").map(Number);
   const d = new Date(y, m - 1, day);
-  return d.toLocaleDateString("vi-VN");
+  return d.toLocaleDateString(locale);
 }
 
 interface TransactionTableProps {
@@ -46,11 +38,13 @@ export default function TransactionsTable({
   defaultTransactions,
   fetchTransactions = true,
 } : TransactionTableProps) {
+  const { t, locale } = useI18n();
   const navigate = useNavigate();
   const [searchStr, setSearchStr] = useState<string>("");
   const [itemCount, setItemCount] = useState<number>(0);
   const [pageCount, setPageCount] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>(defaultTransactions ?? []);
+  const [groupedTransactions, setGroupedTransactions] = useState<Record<string, Transaction[]>>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [filterParam, setFilterParam] = useState<TransactionFilterParams>({
     pageNumber: 1,
@@ -77,21 +71,25 @@ export default function TransactionsTable({
     }
   }, [filterParam]);
 
-  const groupedTransactions = useMemo(() => {
-    const groups: Record<string, Transaction[]> = {};
-    for (const transaction of transactions ?? []) {
-      if (transaction.date == null) continue;
-      const d =
-        transaction.date instanceof Date
-          ? transaction.date
-          : new Date(transaction.date);
-      const dateKey = getLocalDateKey(d);
-      if (!dateKey) continue;
-      if (!groups[dateKey]) groups[dateKey] = [];
-      groups[dateKey].push(transaction);
-    }
+  // Group transactions by date whenever transactions change
+  useEffect(() => {
+    const grpTrns = transactions?.reduce((acc, transaction) => {
+      if (!transaction.date) return acc;
 
-    return groups;
+      const d = new Date(transaction.date);
+      
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      
+      const dateKey = `${year}-${month}-${day}`;
+
+      if (!acc[dateKey]) acc[dateKey] = [];
+      acc[dateKey].push(transaction);
+      return acc;
+    }, {} as Record<string, Transaction[]>);
+
+    setGroupedTransactions(grpTrns);
   }, [transactions]);
 
   // Set transactions to default transactions on reloads
@@ -107,7 +105,7 @@ export default function TransactionsTable({
     setFilterParam({
       pageNumber: DEFAULT_PAGE_NUMBER,
       pageSize: DEFAULT_PAGE_SIZE,
-      search:   searchStr.toUpperCase().trim(),
+      search: searchStr,
     });
   }
 
@@ -140,6 +138,7 @@ export default function TransactionsTable({
 
   // Handler for date range change
   const handleDateRangeChange = (selectedDates: Date[]) => {
+    console.log("Selected Dates:", selectedDates);
     if (selectedDates.length === 2) {
       setDateRange([selectedDates[0], selectedDates[1]]);
       setFilterParam({
@@ -182,7 +181,7 @@ export default function TransactionsTable({
                   className="w-64"
                   confirmOnly={true}
                   onChange={handleDateRangeChange}
-                  placeholder="Tìm trong khoảng ngày"
+                  placeholder={t("transactions.searchDateRange", "Search within date range")}
                   instanceRef={(fp) => (datePickerRef.current = fp)}
                 />
                 {(dateRange[0] || dateRange[1]) && (
@@ -190,7 +189,7 @@ export default function TransactionsTable({
                     className="text-xs text-blue-500 underline cursor-pointer"
                     onClick={handleClearDateRange}
                   >
-                    Xóa
+                    {t("transactions.clear", "Clear")}
                   </span>
                 )}
               </div>
@@ -227,7 +226,7 @@ export default function TransactionsTable({
                   value={searchStr}
                   onChange={(e) => setSearchStr(e.target.value)}
                   type="text"
-                  placeholder="Tìm kiếm..."
+                  placeholder={t("transactions.searchPlaceholder", "Search...")}
                   className="w-full pl-9 pr-3 py-1.5 text-sm rounded-md border border-gray-300 bg-white text-gray-800 shadow-sm shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:outline-hidden focus:ring-brand-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-white/40 dark:focus:border-brand-400 dark:focus:ring-brand-800"
                 />
               </div>
@@ -238,7 +237,7 @@ export default function TransactionsTable({
           {loading ? (
             <TableRow>
               <TableCell colSpan={100} className="text-center py-6 text-gray-500 dark:text-gray-400">
-                Đang tải...
+                {t("transactions.loading", "Loading...")}
               </TableCell>
             </TableRow>
           ) : (
@@ -248,13 +247,17 @@ export default function TransactionsTable({
               {(!transactions || transactions.length === 0) ? (
                 <TableRow>
                   <TableCell colSpan={100} className="text-center py-6 text-gray-500 dark:text-gray-400">
-                    Không có giao dịch nào được tìm thấy.
+                    {t("transactions.empty", "No transactions found.")}
                   </TableCell>
                 </TableRow>
               ) : (
                 Object.entries(groupedTransactions)
                   .sort((a, b) => b[0].localeCompare(a[0]))
                   .map(([dateKey, group]) => {
+                  const dayTotal = group.reduce((sum, t) => {
+                    const amount = t.amount ?? 0;
+                    return t.type === TransactionType.EXPENSE ? sum - amount : sum + amount;
+                  }, 0);
                   return (
                     <React.Fragment key={dateKey}>
                       <TableRow>
@@ -263,7 +266,17 @@ export default function TransactionsTable({
                           className="bg-gray-100 dark:bg-gray-900 text-xs font-semibold text-gray-600 dark:text-gray-300 py-2 px-5"
                         >
                           <div className="flex justify-between items-center w-full">
-                            <span>{parseLocalDateKeyForDisplay(dateKey)}</span>
+                            <span>{parseLocalDateKeyForDisplay(dateKey, locale)}</span>
+                            <span className={dayTotal >= 0 ?
+                              "text-green-500" :
+                              "text-gray-600 dark:text-gray-300"}
+                            >
+                              {dayTotal >= 0 && '+'}
+                              {dayTotal.toLocaleString(locale, {
+                                style: "currency",
+                                currency: "VND"
+                              })}
+                            </span>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -310,7 +323,7 @@ export default function TransactionsTable({
                                   >
                                     {transaction.amount !== undefined &&
                                       transaction.type === TransactionType.INCOME ? '+' : '-'}
-                                    {transaction?.amount?.toLocaleString("vi-VN", {
+                                    {transaction?.amount?.toLocaleString(locale, {
                                       style: "currency",
                                       currency: "VND",
                                     })}
@@ -335,7 +348,7 @@ export default function TransactionsTable({
                 <div className="w-full flex justify-between items-center flex-col sm:flex-row px-4 py-3 gap-2">
                   {isLineCountDisplayed && transactions && (
                     <div>
-                      <span className="text-sm text-gray-400">Số dòng: </span>
+                      <span className="text-sm text-gray-400">{t("transactions.lineCount", "Rows counted")}: </span>
                       <span className="text-sm dark:text-white">
                         {itemCount}
                       </span>

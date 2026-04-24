@@ -8,9 +8,11 @@ import { Category, TransactionType } from "../../types";
 import { createCategory, fetchCategory, updateCategory } from "../../api_caller/CategoryApiCaller";
 import { UUID } from "crypto";
 import Select from "../../components/form/Select";
+import { useI18n } from "../../context/I18nContext";
 
 export default function CategoryAddEdit() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const { id } = useParams();
   const location = useLocation();
   const categoryFromState: Category | undefined = location.state?.category;
@@ -19,15 +21,15 @@ export default function CategoryAddEdit() {
   const [category, setCategory] = useState<Category | undefined>();
 
   const types = [
-    { value: TransactionType.EXPENSE + "", label: "Chi tiêu" },
-    { value: TransactionType.INCOME + "", label: "Thu nhập" },
+    { value: TransactionType.EXPENSE + "", label: t("categories.expenseType", "Expense") },
+    { value: TransactionType.INCOME + "", label: t("categories.incomeType", "Income") },
   ];
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!category?.name?.trim()) return;
 
-    if(!confirm("Bạn có chắc chắn muốn lưu?")) {
+    if(!confirm(t("categories.addEdit.confirmSave", "Are you sure you want to save?"))) {
       return;
     }
 
@@ -39,11 +41,11 @@ export default function CategoryAddEdit() {
       } else {
         result = await createCategory({ name: category.name.trim(), type: category.type! });
       }
-      alert("Đã lưu danh mục thành công!");
+      alert(t("categories.addEdit.successSaved", "Category saved successfully!"));
       const navigatePath = result.id ? `/categories/${result.id}` : id ? `/categories/${id}` : "/categories";
       navigate(navigatePath);
     } catch (err) {
-      alert("Đã có lỗi xảy ra khi lưu danh mục. Vui lòng thử lại.");
+      alert(t("categories.addEdit.errorSave", "An error occurred while saving the category. Please try again."));
       console.error("Error saving category:", err);
     } finally {
       setLoading(false);
@@ -67,31 +69,32 @@ export default function CategoryAddEdit() {
   return (
     <>
       <PageMeta
-        title={id ? "Cập nhật danh mục" : "Tạo danh mục mới"}
-        description={id ? "Cập nhật danh mục" : "Tạo danh mục mới"}
+        title={id ? t("categories.addEdit.editTitle", "Edit category") : t("categories.addEdit.createTitle", "Create category")}
+        description={id ? t("categories.addEdit.editTitle", "Edit category") : t("categories.addEdit.createTitle", "Create category")}
       />
       <PageBreadcrumb
         pageTitles={[
-          { title: "Danh mục", path: "/categories" },
-          { title: id ? "Cập nhật" : "Tạo mới", path: id ? `/categories/${id}/edit` : "/categories/add" },
+          { title: t("categories.title", "Categories"), path: "/categories" },
+          { title: id ? t("categories.addEdit.breadcrumbEdit", "Edit") : t("categories.addEdit.breadcrumbCreate", "Create"),
+            path: id ? `/categories/${id}/edit` : "/categories/add" },
         ]}
       />
 
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
         <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
-          {id ? "Cập nhật danh mục" : "Tạo danh mục mới"}
+          {id ? t("categories.addEdit.editTitle", "Edit category") : t("categories.addEdit.createTitle", "Create category")}
         </h3>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7">
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Tên danh mục <span className="text-red-500">*</span>
+                {t("categories.addEdit.nameLabel", "Category name")} <span className="text-red-500">*</span>
               </p>
               <Input
                 required
                 disabled={loading}
-                placeholder="VD: Ăn uống"
+                placeholder={t("categories.addEdit.namePlaceholder", "Ex: Food")}
                 maxLength={100}
                 value={category?.name || ""}
                 onChange={(e) => setCategory((prev) => ({ ...(prev || {}), name: e.target.value }))}
@@ -101,12 +104,12 @@ export default function CategoryAddEdit() {
             {!id ? (
               <div>
                 <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                  Loại danh mục <span className="text-red-500">*</span>
+                  {t("categories.addEdit.typeLabel", "Category type")} <span className="text-red-500">*</span>
                 </p>
                 <Select
                   required
                   disabled={loading}
-                  placeholder="Chọn loại danh mục"
+                  placeholder={t("categories.addEdit.typePlaceholder", "Select category type")}
                   options={types}
                   onChange={(selectedOption) => {
                     setCategory((prev) => ({
@@ -121,7 +124,7 @@ export default function CategoryAddEdit() {
 
           <div className="flex justify-end gap-4">
             <Button size="sm" type="submit" disabled={loading}>
-              Lưu
+              {t("categories.addEdit.saveAction", "Save")}
             </Button>
           </div>
         </form>

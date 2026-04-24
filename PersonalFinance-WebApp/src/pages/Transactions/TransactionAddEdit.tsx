@@ -13,16 +13,13 @@ import { createTransaction, fetchTransaction, updateTransaction } from "../../ap
 import ModalSelect from "../../components/form/ModalSelect";
 import { fetchCategoryOptions } from "../../api_caller/CategoryApiCaller";
 import { UUID } from "crypto";
+import { useI18n } from "../../context/I18nContext";
 // import TextArea from "../../components/form/input/TextArea";
 // import FileInput from "../../components/form/input/FileInput";
 
-const transactionTypes = [
-  { value: TransactionType.INCOME + "", label: "Thu nhập" },
-  { value: TransactionType.EXPENSE + "", label: "Chi tiêu" },
-];
-
 export default function TransactionAddEdit() {
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
 
   const { id } = useParams();
   const location = useLocation();
@@ -33,16 +30,20 @@ export default function TransactionAddEdit() {
   const [categoryOptions, setCategoryOptions] = useState<Option[]>([]);
   const [newTransaction, setNewTransaction] = useState<Transaction | undefined>();
   const datePickerRef = React.useRef<flatpickr.Instance | null>(null);
+  const transactionTypes = [
+    { value: TransactionType.INCOME + "", label: t("transactions.incomeType", "Income") },
+    { value: TransactionType.EXPENSE + "", label: t("transactions.expenseType", "Expense") },
+  ];
 
   const handleError = (message:string, error: any) => {
-    alert("Có lỗi xảy ra, vui lòng thử lại sau.");
+    alert(t("transactions.addEdit.errorGeneric", "An error occurred. Please try again."));
     console.error(message, error);
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if(!confirm("Bạn có chắc chắn muốn lưu?")) {
+    if(!confirm(t("transactions.addEdit.confirmSave", "Are you sure you want to save?"))) {
       return;
     }
 
@@ -56,7 +57,7 @@ export default function TransactionAddEdit() {
           transactionResult = await createTransaction(newTransaction);
         }
         
-        alert("Đã lưu giao dịch thành công!");
+        alert(t("transactions.addEdit.successSaved", "Transaction saved successfully!"));
         
         const navigatePath =
           transactionResult.id ? `/transactions/${transactionResult.id}` :
@@ -114,19 +115,19 @@ export default function TransactionAddEdit() {
   return (
     <>
       <PageMeta
-        title={id ? "Cập nhật giao dịch" : "Thêm giao dịch mới"}
-        description={id ? "Cập nhật giao dịch" : "Thêm giao dịch mới"}
+        title={id ? t("transactions.addEdit.editTitle", "Edit transaction") : t("transactions.addEdit.createTitle", "Add transaction")}
+        description={id ? t("transactions.addEdit.editTitle", "Edit transaction") : t("transactions.addEdit.createTitle", "Add transaction")}
       />
       <PageBreadcrumb
         pageTitles={[
-          { title: "Giao dịch", path: "/transactions" },
-          { title: id ? "Cập nhật giao dịch" : "Thêm giao dịch mới",
+          { title: t("transactions.title", "Transactions"), path: "/transactions" },
+          { title: id ? t("transactions.addEdit.editTitle", "Edit transaction") : t("transactions.addEdit.createTitle", "Add transaction"),
             path: id ? `/transactions/${id}/edit` : "/transactions/create" },
         ]}
       />
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
         <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
-          {id ? "Cập nhật giao dịch" : "Thêm giao dịch mới"}
+          {id ? t("transactions.addEdit.editTitle", "Edit transaction") : t("transactions.addEdit.createTitle", "Add transaction")}
         </h3>
         <form
           className="space-y-6"
@@ -136,18 +137,18 @@ export default function TransactionAddEdit() {
             <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
-                  {id ? `Mã giao dịch: ${id}` : "Thông tin giao dịch"}
+                  {id ? `${t("transactions.addEdit.transactionCodeLabel", "Transaction code")}: ${id}` : t("transactions.addEdit.infoTitle", "Transaction information")}
                 </h4>
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-7 2xl:gap-x-32">
                   <div>
                     <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      Mô tả ngắn<span className="text-red-500">*</span>
+                      {t("transactions.addEdit.titleLabel", "Short description")}<span className="text-red-500">*</span>
                     </p>
                     <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                       <Input
                         required
                         disabled={loading}
-                        placeholder="VD: Đi ăn ngoài"
+                        placeholder={t("transactions.addEdit.titlePlaceholder", "Ex: Eating out")}
                         maxLength={40}
                         value={newTransaction?.title || ""}
                         onChange={(e) =>
@@ -162,12 +163,12 @@ export default function TransactionAddEdit() {
 
                   <div>
                     <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      Bên giao dịch
+                      {t("transactions.addEdit.merchantLabel", "Counterparty")}
                     </p>
                     <div className="text-sm font-medium text-gray-800 dark:text-white/90">
                       <Input
                         disabled={loading}
-                        placeholder="Bên giao dịch"
+                        placeholder={t("transactions.addEdit.merchantPlaceholder", "Counterparty")}
                         value={newTransaction?.merchant || ""}
                         onChange={(e) =>
                           setNewTransaction((prev) => ({
@@ -181,7 +182,7 @@ export default function TransactionAddEdit() {
 
                   <div>
                     <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      Ngày<span className="text-red-500">*</span>
+                      {t("transactions.addEdit.dateLabel", "Date")}<span className="text-red-500">*</span>
                     </p>
                     <div className="text-sm font-medium text-gray-800 dark:text-white/90">
                       <DatePicker
@@ -199,7 +200,7 @@ export default function TransactionAddEdit() {
                             }));
                           }
                         }}
-                        placeholder="Ngày giao dịch"
+                        placeholder={t("transactions.addEdit.datePlaceholder", "Transaction date")}
                         instanceRef={(fp) => (datePickerRef.current = fp)}
                       />
                     </div>
@@ -207,13 +208,13 @@ export default function TransactionAddEdit() {
                   
                   <div>
                     <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      Loại giao dịch<span className="text-red-500">*</span>
+                      {t("transactions.addEdit.typeLabel", "Transaction type")}<span className="text-red-500">*</span>
                     </p>
                     <div className="text-sm font-medium text-gray-800 dark:text-white/90">
                       <Select
                         required
                         disabled={loading}
-                        placeholder="Chọn loại giao dịch"
+                        placeholder={t("transactions.addEdit.typePlaceholder", "Select transaction type")}
                         options={transactionTypes}
                         defaultValue={transactionFromState?.type?.toString()}
                         onChange={(selectedOption) => {
@@ -231,15 +232,15 @@ export default function TransactionAddEdit() {
                     <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
                       {newTransaction &&
                       newTransaction.type == TransactionType.INCOME
-                        ? "Khoản nhận về (VNĐ)"
-                        : "Khoản đã chi (VNĐ)"}
+                        ? t("transactions.addEdit.incomeAmountLabel", "Amount received (VND)")
+                        : t("transactions.addEdit.expenseAmountLabel", "Amount spent (VND)")}
                       <span className="text-red-500">*</span>
                     </p>
                     <div className="text-sm font-medium text-gray-800 dark:text-white/90">
                       <Input
                         required
                         disabled={loading}
-                        placeholder={(10000).toLocaleString("vi-VN", {
+                        placeholder={(10000).toLocaleString(locale, {
                           style: "currency",
                           currency: "VND"
                         })}
@@ -257,7 +258,7 @@ export default function TransactionAddEdit() {
 
                   <div>
                     <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      Phân loại giao dịch
+                      {t("transactions.addEdit.categoryLabel", "Category")}
                     </p>
                     <div className="text-sm font-medium text-gray-800 dark:text-white/90">
                       <ModalSelect
@@ -270,7 +271,9 @@ export default function TransactionAddEdit() {
                             categoryId: value as UUID,
                           }))
                         }}
-                        placeholder={loading || loadingOptions ? "Đang tải..." : "Chọn danh mục"}
+                        placeholder={loading || loadingOptions
+                          ? t("transactions.addEdit.loadingOptions", "Loading...")
+                          : t("transactions.addEdit.categoryPlaceholder", "Select category")}
                       />
                     </div>
                   </div>
@@ -304,7 +307,7 @@ export default function TransactionAddEdit() {
 
           <div className="flex justify-end gap-4">
             <Button size="sm" type="submit" disabled={loading}>
-              Lưu
+              {t("transactions.addEdit.saveAction", "Save")}
             </Button>
           </div>
         </form>

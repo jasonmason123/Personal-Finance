@@ -5,19 +5,16 @@ const AuthContext = createContext<{
   isAuthenticated: boolean;
   loading: boolean;
   username: string;
-  email: string;
   dateJoined: string;
 }>({
   isAuthenticated: false,
   loading: true,
   username: "",
-  email: "",
   dateJoined: "",
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [username, setUsername] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
   const [dateJoined, setDateJoined] = useState<string>("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);  // Track loading state
@@ -30,7 +27,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const userInfo = getUserInfo();
       if (userInfo != null) {
         setUsername(userInfo.username);
-        setEmail(userInfo.email);
         setDateJoined(userInfo.dateJoined);
       }
     }
@@ -42,7 +38,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, loading, username, email, dateJoined }}>
+    <AuthContext.Provider value={{ isAuthenticated, loading, username, dateJoined }}>
       {children}
     </AuthContext.Provider>
   );
