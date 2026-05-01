@@ -137,7 +137,7 @@ export default function TransactionAddEdit() {
             <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
-                  {id ? `${t("transactions.addEdit.transactionCodeLabel", "Transaction code")}: ${id}` : t("transactions.addEdit.infoTitle", "Transaction information")}
+                  {t("transactions.addEdit.infoTitle", "Transaction information")}
                 </h4>
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-7 2xl:gap-x-32">
                   <div>

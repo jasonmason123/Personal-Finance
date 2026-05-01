@@ -6,7 +6,15 @@ TableFooter,
 TableRow,
 } from "../ui/table";
   
-import {  DateFilterIso, DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE, Transaction, TransactionFilterParams, TransactionType } from "../../types";
+import {
+  DateFilterIso,
+  DEFAULT_PAGE_NUMBER,
+  DEFAULT_PAGE_SIZE,
+  Option,
+  Transaction,
+  TransactionFilterParams,
+  TransactionType,
+} from "../../types";
 import { useEffect, useState } from "react";
 import React from "react";
 import { useNavigate } from "react-router";
@@ -16,6 +24,8 @@ import flatpickr from "flatpickr"; // Add this import if not present
 import { fetchTransactionPagedList } from "../../api_caller/TransactionApiCaller";
 import { UUID } from "crypto";
 import { useI18n } from "../../context/I18nContext";
+import Select from "../form/Select";
+import Input from "../form/input/InputField";
 
 function parseLocalDateKeyForDisplay(key: string, locale: string): string {
   const [y, m, day] = key.split("-").map(Number);
@@ -41,6 +51,7 @@ export default function TransactionsTable({
   const { t, locale } = useI18n();
   const navigate = useNavigate();
   const [searchStr, setSearchStr] = useState<string>("");
+  const [transactionTypeView, setTransactionTypeView] = useState<"all" | "income" | "expense">("all");
   const [itemCount, setItemCount] = useState<number>(0);
   const [pageCount, setPageCount] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>(defaultTransactions ?? []);
@@ -71,9 +82,30 @@ export default function TransactionsTable({
     }
   }, [filterParam]);
 
+  const apiTransactionType: TransactionType | undefined =
+    transactionTypeView === "income"
+      ? TransactionType.INCOME
+      : transactionTypeView === "expense"
+        ? TransactionType.EXPENSE
+        : undefined;
+
+  const transactionTypeOptions: Option[] = [
+    { value: "all", label: t("transactions.allTransactions", "All transactions") },
+    { value: "income", label: t("transactions.incomeType", "Income") },
+    { value: "expense", label: t("transactions.expenseType", "Expense") },
+  ];
+
   // Group transactions by date whenever transactions change
   useEffect(() => {
-    const grpTrns = transactions?.reduce((acc, transaction) => {
+    const filteredTransactions = transactions.filter((transaction) => {
+      if (!transaction.date) return false;
+      if (transactionTypeView === "all") return true;
+      if (transactionTypeView === "income") return transaction.type === TransactionType.INCOME;
+      if (transactionTypeView === "expense") return transaction.type === TransactionType.EXPENSE;
+      return true;
+    });
+
+    const grpTrns = filteredTransactions?.reduce((acc, transaction) => {
       if (!transaction.date) return acc;
 
       const d = new Date(transaction.date);
@@ -90,7 +122,7 @@ export default function TransactionsTable({
     }, {} as Record<string, Transaction[]>);
 
     setGroupedTransactions(grpTrns);
-  }, [transactions]);
+  }, [transactions, transactionTypeView]);
 
   // Set transactions to default transactions on reloads
   useEffect(() => {
@@ -105,7 +137,8 @@ export default function TransactionsTable({
     setFilterParam({
       pageNumber: DEFAULT_PAGE_NUMBER,
       pageSize: DEFAULT_PAGE_SIZE,
-      search: searchStr,
+      search: searchStr.toUpperCase(),
+      transactionType: apiTransactionType,
     });
   }
 
@@ -133,6 +166,7 @@ export default function TransactionsTable({
     setFilterParam({
       pageNumber: 1,
       pageSize: 10,
+      transactionType: apiTransactionType,
     });
   }
 
@@ -167,67 +201,76 @@ export default function TransactionsTable({
     });
   };
 
+  const applyTransactionTypeView = (nextView: "all" | "income" | "expense") => {
+    setTransactionTypeView(nextView);
+    setFilterParam((prev) => ({
+      ...prev,
+      pageNumber: DEFAULT_PAGE_NUMBER,
+      pageSize: prev.pageSize ?? DEFAULT_PAGE_SIZE,
+      transactionType:
+        nextView === "income"
+          ? TransactionType.INCOME
+          : nextView === "expense"
+            ? TransactionType.EXPENSE
+            : undefined,
+    }));
+  };
+
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
         {isSearchAndFilterIncluded && (
           <div className="p-4 flex justify-between items-center border-b border-gray-100 dark:border-white/[0.05] flex-col sm:flex-row gap-4">
-            <div className="w-full sm:w-auto flex items-center gap-4 justify-center sm:justify-end">
-              <div className="relative flex items-center gap-2">
-                {/* Date Range Picker */}
-                <DatePicker
-                  id="dateRange"
-                  mode="range"
-                  className="w-64"
-                  confirmOnly={true}
-                  onChange={handleDateRangeChange}
-                  placeholder={t("transactions.searchDateRange", "Search within date range")}
-                  instanceRef={(fp) => (datePickerRef.current = fp)}
-                />
-                {(dateRange[0] || dateRange[1]) && (
-                  <span
-                    className="text-xs text-blue-500 underline cursor-pointer"
-                    onClick={handleClearDateRange}
-                  >
-                    {t("transactions.clear", "Clear")}
-                  </span>
-                )}
-              </div>
+            <div className="w-44">
+              <Select
+                key={transactionTypeView}
+                options={transactionTypeOptions}
+                defaultValue={transactionTypeView}
+                onChange={(value) => {
+                  if (value === "income") applyTransactionTypeView("income");
+                  else if (value === "expense") applyTransactionTypeView("expense");
+                  else applyTransactionTypeView("all");
+                }}
+                placeholder={t("transactions.filterPlaceholder", "Filter")}
+              />
+            </div>
+
+            {/* Date Range Picker */}
+            <div className="flex items-center gap-2">
+              <DatePicker
+                id="dateRange"
+                mode="range"
+                className="w-64"
+                confirmOnly={true}
+                onChange={handleDateRangeChange}
+                placeholder={t("transactions.searchDateRange", "Search within date range")}
+                instanceRef={(fp) => (datePickerRef.current = fp)}
+              />
+              {(dateRange[0] || dateRange[1]) && (
+                <span
+                  className="text-xs text-blue-500 underline cursor-pointer"
+                  onClick={handleClearDateRange}
+                >
+                  {t("transactions.clear", "Clear")}
+                </span>
+              )}
             </div>
 
             <form className="h-11 w-full sm:w-1/4"
               onSubmit={(e) => {
                 e.preventDefault();
-                onSearch!== undefined && onSearch(searchStr);
+                if (onSearch !== undefined) {
+                  onSearch(searchStr);
+                }
               }}
             >
-              <div className="relative w-full max-w-sm flex items-center">
-                <button
-                  type="submit"
-                  className="absolute left-2 text-gray-500 dark:text-gray-400 p-1"
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M3.04175 9.37363C3.04175 5.87693 5.87711 3.04199 9.37508 3.04199C12.8731 3.04199 15.7084 5.87693 15.7084 9.37363C15.7084 12.8703 12.8731 15.7053 9.37508 15.7053C5.87711 15.7053 3.04175 12.8703 3.04175 9.37363ZM9.37508 1.54199C5.04902 1.54199 1.54175 5.04817 1.54175 9.37363C1.54175 13.6991 5.04902 17.2053 9.37508 17.2053C11.2674 17.2053 13.003 16.5344 14.357 15.4176L17.177 18.238C17.4699 18.5309 17.9448 18.5309 18.2377 18.238C18.5306 17.9451 18.5306 17.4703 18.2377 17.1774L15.418 14.3573C16.5365 13.0033 17.2084 11.2669 17.2084 9.37363C17.2084 5.04817 13.7011 1.54199 9.37508 1.54199Z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                </button>
-  
-                <input
+              <div className="w-full max-w-sm">
+                <Input
+                  type="text"
                   value={searchStr}
                   onChange={(e) => setSearchStr(e.target.value)}
-                  type="text"
                   placeholder={t("transactions.searchPlaceholder", "Search...")}
-                  className="w-full pl-9 pr-3 py-1.5 text-sm rounded-md border border-gray-300 bg-white text-gray-800 shadow-sm shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:outline-hidden focus:ring-brand-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-white/40 dark:focus:border-brand-400 dark:focus:ring-brand-800"
+                  className=""
                 />
               </div>
             </form>
@@ -244,7 +287,7 @@ export default function TransactionsTable({
             <>
               {/* Table Body */}
               <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-              {(!transactions || transactions.length === 0) ? (
+              {(Object.keys(groupedTransactions).length === 0) ? (
                 <TableRow>
                   <TableCell colSpan={100} className="text-center py-6 text-gray-500 dark:text-gray-400">
                     {t("transactions.empty", "No transactions found.")}
@@ -254,10 +297,6 @@ export default function TransactionsTable({
                 Object.entries(groupedTransactions)
                   .sort((a, b) => b[0].localeCompare(a[0]))
                   .map(([dateKey, group]) => {
-                  const dayTotal = group.reduce((sum, t) => {
-                    const amount = t.amount ?? 0;
-                    return t.type === TransactionType.EXPENSE ? sum - amount : sum + amount;
-                  }, 0);
                   return (
                     <React.Fragment key={dateKey}>
                       <TableRow>
@@ -267,16 +306,6 @@ export default function TransactionsTable({
                         >
                           <div className="flex justify-between items-center w-full">
                             <span>{parseLocalDateKeyForDisplay(dateKey, locale)}</span>
-                            <span className={dayTotal >= 0 ?
-                              "text-green-500" :
-                              "text-gray-600 dark:text-gray-300"}
-                            >
-                              {dayTotal >= 0 && '+'}
-                              {dayTotal.toLocaleString(locale, {
-                                style: "currency",
-                                currency: "VND"
-                              })}
-                            </span>
                           </div>
                         </TableCell>
                       </TableRow>

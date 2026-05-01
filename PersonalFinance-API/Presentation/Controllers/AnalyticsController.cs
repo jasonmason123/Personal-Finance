@@ -31,6 +31,11 @@ namespace PersonalFinance.Presentation.Controllers
                 var result = await queries.GetIncomeExpenseSummaryAsync(UserId, dateFilter);
                 return Ok(result);
             }
+            catch (ArgumentException ex)
+            {
+                Console.Write(ex);
+                return BadRequest(ex.Message);
+            }
             catch (Exception ex)
             {
                 Console.Write(ex);
@@ -48,6 +53,11 @@ namespace PersonalFinance.Presentation.Controllers
                 var result = await queries.GetCategoryBreakdownAsync(UserId, dateFilter, type);
                 return Ok(result);
             }
+            catch (ArgumentException ex)
+            {
+                Console.Write(ex);
+                return BadRequest(ex.Message);
+            }
             catch (Exception ex)
             {
                 Console.Write(ex);
@@ -62,6 +72,11 @@ namespace PersonalFinance.Presentation.Controllers
             {
                 var result = await queries.GetAnnualTrendAsync(UserId, year);
                 return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                Console.Write(ex);
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {

@@ -1,23 +1,30 @@
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { analyticsApiCaller } from "../../api_caller/AnalyticsApiCaller";
 import { DateFilterIso, TransactionType } from "../../types";
 import { useI18n } from "../../context/I18nContext";
 
-export default function ExpenseBreakdownChart() {
+type ExpenseBreakdownChartProps = {
+  dateFrom: Date;
+  dateTo: Date;
+  periodLabel: string;
+};
+
+export default function ExpenseBreakdownChart({
+  dateFrom,
+  dateTo,
+  periodLabel,
+}: ExpenseBreakdownChartProps) {
   const { t, locale } = useI18n();
-  const today = new Date();
-  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-  const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
   const [labels, setLabels] = useState<string[]>([]);
   const [series, setSeries] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const getData = async () => {
+  const getData = useCallback(async () => {
     setLoading(true);
     await analyticsApiCaller.getCategoryBreakdown(
-      DateFilterIso.between(firstDay, lastDay),
+      DateFilterIso.between(dateFrom, dateTo),
       TransactionType.EXPENSE
     )
       .then((result) => {
@@ -36,11 +43,11 @@ export default function ExpenseBreakdownChart() {
       .finally(() => {
         setLoading(false);
       });
-  };
+  }, [dateFrom, dateTo, t]);
 
   useEffect(() => {
     getData();
-  }, []);
+  }, [getData]);
 
   const formatterVND = (value: number) =>
     value.toLocaleString(locale, { style: "currency", currency: "VND" });
@@ -72,9 +79,7 @@ export default function ExpenseBreakdownChart() {
           {t("dashboard.expenseBreakdownTitle", "Expense breakdown by category")}
         </h3>
         <p className="mt-1 text-gray-500 text-theme-sm dark:text-gray-400">
-          {t("dashboard.monthYear", "Month {month}/{year}")
-            .replace("{month}", String(today.getMonth() + 1))
-            .replace("{year}", String(today.getFullYear()))}
+          {periodLabel}
         </p>
       </div>
 

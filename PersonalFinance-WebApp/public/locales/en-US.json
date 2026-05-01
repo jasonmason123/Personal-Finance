@@ -47,6 +47,8 @@
     "selectLanguage": "Select language"
   },
   "transactions": {
+    "allTransactions": "All transactions",
+    "filterPlaceholder": "Filter",
     "title": "Transactions",
     "description": "Financial transactions",
     "incomeType": "Income",
@@ -62,7 +64,6 @@
     "addEdit": {
       "createTitle": "Add transaction",
       "editTitle": "Edit transaction",
-      "transactionCodeLabel": "Transaction code",
       "infoTitle": "Transaction information",
       "titleLabel": "Short description",
       "titlePlaceholder": "Ex: Eating out",
@@ -171,7 +172,6 @@
     "overLimit": "Warning: Spending has exceeded income!",
     "totalIncome": "Total income",
     "totalExpense": "Total expense",
-    "remainingDaysInMonth": "Days left in month {month}:",
     "days": "days",
     "dailyCanSpend": "Daily budget for remaining days",
     "dailyCanSpendHint": "Maximum daily spending to keep your saving target",
@@ -182,6 +182,15 @@
     "statisticsByYearTitle": "Yearly statistics",
     "statisticsByYearDescription": "Yearly income and expense statistics",
     "selectYear": "Select year",
+    "byWeek": "Week",
+    "byMonth": "Month",
+    "byQuarter": "Quarter",
+    "byCustom": "Custom",
+    "selectPeriodType": "Select period type",
+    "selectPeriod": "Select period",
+    "selectDateRange": "Select date range",
+    "quarterYear": "Q{quarter}/{year}",
+    "remainingDays": "Days left:",
     "incomeSeries": "Income",
     "expenseSeries": "Expense",
     "otherCategory": "Other"

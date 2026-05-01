@@ -1,32 +1,35 @@
 import { ApexOptions } from "apexcharts";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Chart from "react-apexcharts";
-import { InfoIcon } from "../../icons";
-import Tippy from "@tippyjs/react";
 import { analyticsApiCaller } from "../../api_caller/AnalyticsApiCaller";
 import { useI18n } from "../../context/I18nContext";
 
-export default function MonthlyOverall() {
+type MonthlyOverallProps = {
+  dateFrom: Date;
+  dateTo: Date;
+  periodLabel: string;
+};
+
+export default function MonthlyOverall({ dateFrom, dateTo, periodLabel }: MonthlyOverallProps) {
   const { t, locale } = useI18n();
   const today = new Date();
-  const savingPercentage = 10;
   const oneHundredPercent = 100;
-  
-  // Calculate date boundaries for the current month
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
-  const daysRemain = Math.ceil((endOfMonth.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) || 1;
+
+  const daysRemain = Math.max(
+    0,
+    Math.ceil((dateTo.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  );
 
   const [loading, setLoading] = useState(true);
   const [income, setIncome] = useState<number>(0);
   const [expense, setExpense] = useState<number>(0);
 
-  const getSetData = async () => {
+  const getSetData = useCallback(async () => {
     setLoading(true);
     try {
       const response = await analyticsApiCaller.getIncomeExpenseSummary({
-        dateFrom: startOfMonth.toISOString(),
-        dateTo: endOfMonth.toISOString(),
+        dateFrom: dateFrom.toISOString(),
+        dateTo: dateTo.toISOString(),
       });
 
       setIncome(response.income);
@@ -36,20 +39,16 @@ export default function MonthlyOverall() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateFrom, dateTo]);
 
   useEffect(() => {
     getSetData();
-  }, []);
+  }, [getSetData]);
 
   // Derived Values
   const incomeExpenseDiff = income - expense;
   const absoluteDiff = Math.abs(incomeExpenseDiff);
   const spentEarnedRatio = income > 0 ? (expense / income) * oneHundredPercent : (expense > 0 ? 110 : 0);
-  
-  // Logic: How much can I spend/must I save per day?
-  const targetSaving = income * (savingPercentage / oneHundredPercent);
-  const dailyAmount = (incomeExpenseDiff - targetSaving) / daysRemain;
 
   // Chart Configuration
   const colorSpending = "#F87171";
@@ -98,7 +97,7 @@ export default function MonthlyOverall() {
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <h4 className="text-lg font-semibold text-gray-800 dark:text-white">
-          {t("dashboard.monthlyOverallTitle", "Monthly overview")} {today.getMonth() + 1}/{today.getFullYear()}
+          {t("dashboard.monthlyOverallTitle", "Overview")} - {periodLabel}
         </h4>
       </div>
 
@@ -154,47 +153,20 @@ export default function MonthlyOverall() {
             </h3>
           </div>
 
-          <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
-             <div className="flex justify-between items-center text-sm">
+          {daysRemain != 0 && (
+            <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+              <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-500">
-                  {t("dashboard.remainingDaysInMonth", "Days left in month {month}:")
-                    .replace("{month}", String(today.getMonth() + 1))}
+                  {t("dashboard.remainingDays", "Days left:")}
                 </span>
                 <span className="font-semibold text-gray-800 dark:text-white">
                   {daysRemain} {t("dashboard.days", "days")}
                 </span>
-             </div>
-          </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Footer Recommendations */}
-      {!loading && (income > 0 || expense > 0) && (
-        <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl flex justify-between items-center">
-              <span className="text-sm text-gray-500 flex items-center gap-1">
-                {t("dashboard.dailyCanSpend", "Daily budget for remaining days")}
-                <Tippy content={t("dashboard.dailyCanSpendHint", "Maximum daily spending to keep your saving target")}>
-                   <div className="cursor-help"><InfoIcon className="w-3 h-3 text-gray-400" /></div>
-                </Tippy>
-              </span>
-              <span className={`font-bold ${dailyAmount > 0 ? "text-gray-800 dark:text-white" : "text-red-500"}`}>
-                {Math.abs(dailyAmount).toLocaleString(locale, { style: "currency", currency: "VND" })}
-              </span>
-            </div>
-            <div className="bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl flex justify-between items-center">
-              <span className="text-sm text-gray-500">
-                {t("dashboard.savingTarget", "Saving target (at least {percentage}% of monthly income)")
-                  .replace("{percentage}", String(savingPercentage))}
-              </span>
-              <span className="font-bold text-gray-800 dark:text-white">
-                {targetSaving.toLocaleString(locale, { style: "currency", currency: "VND" })}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

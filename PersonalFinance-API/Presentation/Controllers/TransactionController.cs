@@ -99,6 +99,11 @@ namespace PersonalFinance.Presentation.Controllers
                 Console.Write(ex);
                 return StatusCode(400, ex.Message);
             }
+            catch (InvalidOperationException ex)
+            {
+                Console.Write(ex);
+                return StatusCode(400, ex.Message);
+            }
             catch (Exception ex)
             {
                 Console.Write(ex);

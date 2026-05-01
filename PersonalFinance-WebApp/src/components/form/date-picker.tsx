@@ -7,6 +7,7 @@ import Hook = flatpickr.Options.Hook;
 import DateOption = flatpickr.Options.DateOption;
 import { Vietnamese } from "flatpickr/dist/l10n/vn.js";
 import confirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
+import { useI18n } from "../../context/I18nContext";
 
 type PropsType = {
   id: string;
@@ -48,13 +49,14 @@ export default function DatePicker({
   const visibleInputRef = useRef<HTMLInputElement>(null);
   const flatpickrRef = useRef<flatpickr.Instance | null>(null);
   const [dateValue, setDateValue] = useState<string>("");
+  const { locale } = useI18n();
 
   useEffect(() => {
     const inputEl = document.getElementById(id) as HTMLInputElement;
     if (!inputEl) return;
 
     const instance = flatpickr(inputEl, {
-      locale: Vietnamese,
+      locale: locale === "vi-VN" ? Vietnamese : "default",
       plugins: confirmOnly
         ? [confirmDatePlugin({
               showAlways: false,
